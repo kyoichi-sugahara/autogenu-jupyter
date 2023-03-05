@@ -39,7 +39,7 @@ public:
   }
 
   ///
-  /// @brief Save datas.
+  /// @brief Save data.
   /// @param[in] t Time.
   /// @param[in] x State.
   /// @param[in] u Control input.

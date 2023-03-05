@@ -262,7 +262,7 @@ class AutoGenU(object):
 
     def set_horizon_params(self, Tf, alpha=0.0):
         """ Sets parameters of the horizon of NMPC. If alpha > 0, then the 
-            length of the horzion at time t is given by Tf * (1-exp(-alpha*t)). 
+            length of the horizon at time t is given by Tf * (1-exp(-alpha*t)). 
             If alpha is not positive, the it is given by Tf.
 
             Args: 
@@ -284,7 +284,7 @@ class AutoGenU(object):
                     finitei difference approximation used in the FD-GMRES. 
                 zeta: A stabilization parameter of the C/GMRES method. It may 
                     work well if you set as zeta=1/sampling_period.
-                kmax: Maximam number of the iteration of the Krylov 
+                kmax: maximum number of the iteration of the Krylov 
                     subspace method for the linear problem. 
         """
         assert sampling_time > 0
@@ -1395,7 +1395,7 @@ install(
                     generator. If 'MSYS', then 'MSYS Makefiles' is used. If 
                     'MinGW', then 'MinGW Makefiles' is used. The default value 
                     is 'Auto' and the generator is selected automatically. If 
-                    sh.exe exists in your PATH, MSYS is choosed, and otherwise 
+                    sh.exe exists in your PATH, MSYS is chosen, and otherwise 
                     MinGW is used. If different value from 'MSYS' and 'MinGW', 
                     generator is selected automatically.
                 vectorize: If True, vectorization ('-march=native' compile option) is enabled.
@@ -1425,7 +1425,7 @@ install(
                     generator. If 'MSYS', then 'MSYS Makefiles' is used. If 
                     'MinGW', then 'MinGW Makefiles' is used. The default value 
                     is 'Auto' and the generator is selected automatically. If 
-                    sh.exe exists in your PATH, MSYS is choosed, and otherwise 
+                    sh.exe exists in your PATH, MSYS is chosen, and otherwise 
                     MinGW is used. If different value from 'MSYS' and 'MinGW', 
                     generator is selected automatically.
                 vectorize: If True, vectorization ('-march=native' compile option) is enabled.
