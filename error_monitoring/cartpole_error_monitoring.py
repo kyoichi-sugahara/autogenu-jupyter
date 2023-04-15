@@ -25,25 +25,27 @@ max_iterations = (
 )
 
 # Define the AutoGenU object
-ag = autogenu.AutoGenU(
+auto_gen_u = autogenu.AutoGenU(
     ocp_name, nx, nu
 )  # Create an AutoGenU object with the specified problem name, number of states, and number of control inputs
 
 # Define variables
-t = ag.define_t()  # Define time variable
-x = ag.define_x()  # Define state variables
-u = ag.define_u()  # Define control input variables
-m_c, m_p, l, g = ag.define_scalar_vars(
+t = auto_gen_u.define_t()  # Define time variable
+x = auto_gen_u.define_x()  # Define state variables
+u = auto_gen_u.define_u()  # Define control input variables
+m_c, m_p, l, g = auto_gen_u.define_scalar_vars(
     "m_c", "m_p", "l", "g"
 )  # Define scalar variables for the cartpole system (mass of cart, mass of pendulum, length of pendulum arm, and gravity)
-q = ag.define_array_var("q", nx)  # Define array variable for the state cost weights
-q_terminal = ag.define_array_var(
+q = auto_gen_u.define_array_var(
+    "q", nx
+)  # Define array variable for the state cost weights
+q_terminal = auto_gen_u.define_array_var(
     "q_terminal", nx
 )  # Define array variable for the terminal state cost weights
-x_ref = ag.define_array_var(
+x_ref = auto_gen_u.define_array_var(
     "x_ref", nx
 )  # Define array variable for the state reference
-r = ag.define_array_var(
+r = auto_gen_u.define_array_var(
     "r", nu
 )  # Define array variable for the control input cost weights
 
@@ -73,58 +75,62 @@ L = sum(q[i] * (x[i] - x_ref[i]) ** 2 for i in range(nx)) / 2 + (r[0] * u[0] ** 
 phi = sum(q_terminal[i] * (x[i] - x_ref[i]) ** 2 for i in range(nx)) / 2
 
 # Set functions
-ag.set_functions(f, C, h, L, phi)
+auto_gen_u.set_functions(f, C, h, L, phi)
 
 # Set additional parameters
-ag.add_control_input_bounds(uindex=0, umin=-15.0, umax=15.0, dummy_weight=0.1)
-ag.set_scalar_vars(["m_c", 2], ["m_p", 0.2], ["l", 0.5], ["g", 9.80665])
-ag.set_array_var("q", [2.5, 10, 0.01, 0.01])
-ag.set_array_var("r", [1])
-ag.set_array_var("q_terminal", [2.5, 10, 0.01, 0.01])
-ag.set_array_var("x_ref", [0, "M_PI", 0, 00])
+auto_gen_u.add_control_input_bounds(uindex=0, umin=-15.0, umax=15.0, dummy_weight=0.1)
+auto_gen_u.set_scalar_vars(["m_c", 2], ["m_p", 0.2], ["l", 0.5], ["g", 9.80665])
+auto_gen_u.set_array_var("q", [2.5, 10, 0.01, 0.01])
+auto_gen_u.set_array_var("r", [1])
+auto_gen_u.set_array_var("q_terminal", [2.5, 10, 0.01, 0.01])
+auto_gen_u.set_array_var("x_ref", [0, "M_PI", 0, 00])
 
 # Generate OCP definition
 simplification = False
 common_subexpression_elimination = True
-ag.generate_ocp_definition(simplification, common_subexpression_elimination)
+auto_gen_u.generate_ocp_definition(simplification, common_subexpression_elimination)
 
 # # Set NLP type
 nlp_type = autogenu.NLPType.MultipleShooting
-ag.set_nlp_type(nlp_type)
+auto_gen_u.set_nlp_type(nlp_type)
 
 # Set horizon parameters
-ag.set_horizon_params(Tf, alpha)
+auto_gen_u.set_horizon_params(Tf, alpha)
 
 # Set solver parameters
-ag.set_solver_params(sampling_time, N, finite_difference_epsilon, zeta, kmax)
+auto_gen_u.set_solver_params(sampling_time, N, finite_difference_epsilon, zeta, kmax)
 
 # Set initialization parameters
-ag.set_initialization_params(solution_initial_guess, tolerance, max_iterations)
+auto_gen_u.set_initialization_params(solution_initial_guess, tolerance, max_iterations)
 
 # Set simulation parameters
-ag.set_simulation_params(initial_time, initial_state, simulation_length)
+auto_gen_u.set_simulation_params(initial_time, initial_state, simulation_length)
 
 # Generate main function and CMakeLists
-ag.generate_main()
-ag.generate_cmake()
+# auto_gen_u.generate_main()
+# auto_gen_u.generate_cmake()
 
 # Build and run simulation
 generator = "Auto"
 vectorize = False
 remove_build_dir = False
-ag.git_submodule_update()
-ag.build_main(
+auto_gen_u.git_submodule_update()
+auto_gen_u.build_main(
     generator=generator, vectorize=vectorize, remove_build_dir=remove_build_dir
 )
-ag.run_simulation()
+auto_gen_u.run_simulation()
 
 # Plot results
-plotter = autogenu.Plotter(log_dir=ag.get_ocp_log_dir(), log_name=ag.get_ocp_name())
+plotter = autogenu.Plotter(
+    log_dir=auto_gen_u.get_ocp_log_dir(), log_name=auto_gen_u.get_ocp_name()
+)
 plotter.set_scales(2, 5, 2)
 plotter.save()
 
 # Generate animation
-anim = autogenu.CartPole(log_dir=ag.get_ocp_log_dir(), log_name=ag.get_ocp_name())
+anim = autogenu.CartPole(
+    log_dir=auto_gen_u.get_ocp_log_dir(), log_name=auto_gen_u.get_ocp_name()
+)
 anim.set_skip_frames(10)
 anim.generate_animation()
 
@@ -132,14 +138,14 @@ anim.generate_animation()
 generator = "Auto"
 vectorize = False
 remove_build_dir = False
-ag.generate_python_bindings()
-ag.git_submodule_update()
-ag.build_python_interface(
+auto_gen_u.generate_python_bindings()
+auto_gen_u.git_submodule_update()
+auto_gen_u.build_python_interface(
     generator=generator, vectorize=vectorize, remove_build_dir=remove_build_dir
 )
 
 # Install Python interface
-ag.install_python_interface(install_prefix=None)
+auto_gen_u.install_python_interface(install_prefix=None)
 
 # Generate and open documentation
 autogenu.generate_docs()
