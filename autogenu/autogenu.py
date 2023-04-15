@@ -2,7 +2,6 @@ import subprocess
 import platform
 from enum import Enum, auto
 from collections import namedtuple
-from typing import Optional
 import sympy
 import os
 import sys
@@ -79,20 +78,15 @@ class AutoGenU(object):
         self.__solver_params = None
         self.__initialization_params = None
         self.__simulation_params = None
-        self.__ocp_dir = None
 
     def get_ocp_name(self):
         return self.__ocp_name
 
-    def get_ocp_dir(self, ocp_dir: Optional[str]=None):
-        if ocp_dir is None:
-            return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name)
-        return os.path.join(os.getcwd(), os.path.abspath(ocp_dir), self.__ocp_name)
+    def get_ocp_dir(self):
+        return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name)
 
-    def get_ocp_pybind_dir(self, ocp_pybind_dir: Optional[str]=None):
-        if ocp_pybind_dir is None:
-            return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name)
-        return os.path.join(os.getcwd(), os.path.abspath(ocp_pybind_dir), self.__ocp_name, 'python')
+    def get_ocp_pybind_dir(self):
+        return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name, 'python')
 
     def get_ocp_build_dir(self):
         return os.path.join(os.getcwd(), self.get_ocp_dir(), 'build')
@@ -335,16 +329,6 @@ class AutoGenU(object):
         assert len(initial_state) == self.__nx, "The dimension of initial_state must be nx!"
         assert simulation_length > 0
         self.__simulation_params = SimulationParams(initial_time, initial_state, simulation_length)
-    
-    def set_ocp_dir(
-            self, ocp_dir: str
-        ):
-        """ Set directory where code will be generated. 
-
-        Args:
-            ocp_dir (str): The directory for optimal control problems.
-        """
-        self.__ocp_dir = ocp_dir
 
     def generate_ocp_definition(self, simplification: bool=False, common_subexpression_elimination: bool=False):
         """ Generates the C++ source file in which the equations to solve the 
