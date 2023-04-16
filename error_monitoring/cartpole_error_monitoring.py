@@ -5,7 +5,7 @@ from sympy import sin, cos, sqrt
 # Constants
 nx = 4  # Number of states
 nu = 1  # Number of control inputs
-ocp_name = "cartpole_error_monitoring"  # Name of the optimal control problem
+ocp_name = "generated_code"  # Name of the optimal control problem
 Tf = 2.0  # Time horizon for the optimal control problem
 alpha = 0.0  # Soft horizon parameter
 sampling_time = 0.001  # Sampling time for the discrete-time optimal control problem
@@ -106,9 +106,12 @@ auto_gen_u.set_initialization_params(solution_initial_guess, tolerance, max_iter
 # Set simulation parameters
 auto_gen_u.set_simulation_params(initial_time, initial_state, simulation_length)
 
+# Set simulation parameters
+auto_gen_u.set_ocp_dir("error_monitoring")
+
 # Generate main function and CMakeLists
-# auto_gen_u.generate_main()
-# auto_gen_u.generate_cmake()
+auto_gen_u.generate_main()
+auto_gen_u.generate_cmake()
 
 # Build and run simulation
 generator = "Auto"
