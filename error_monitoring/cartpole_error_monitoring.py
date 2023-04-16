@@ -107,7 +107,7 @@ def generate_ocp_definition(auto_gen_u):
 
 
 def set_nlp_type(auto_gen_u):
-    nlp_type = autogenu.NLPType.MultipleShooting
+    nlp_type = autogenu.NLPType.SingleShooting
     auto_gen_u.set_nlp_type(nlp_type)
 
 
