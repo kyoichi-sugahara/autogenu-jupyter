@@ -12,7 +12,7 @@
 
 int main() {
   // Define the optimal control problem.
-  cgmres::OCP_cartpole_error_monitoring ocp;
+  cgmres::OCP_generated_code ocp;
 
   // Define the horizon.
   const double Tf = 2.0;
@@ -35,7 +35,7 @@ int main() {
 
   // Initialize the solution of the C/GMRES method.
   constexpr int kmax_init = 1;
-  cgmres::ZeroHorizonOCPSolver<cgmres::OCP_cartpole_error_monitoring, kmax_init> initializer(ocp, settings);
+  cgmres::ZeroHorizonOCPSolver<cgmres::OCP_generated_code, kmax_init> initializer(ocp, settings);
   cgmres::Vector<1> uc0;
   uc0 << 0.01;
   initializer.set_uc(uc0);
@@ -44,7 +44,7 @@ int main() {
   // Define the C/GMRES solver.
   constexpr int N = 100;
   constexpr int kmax = 5;
-  cgmres::MultipleShootingCGMRESSolver<cgmres::OCP_cartpole_error_monitoring, N, kmax> mpc(ocp, horizon, settings);
+  cgmres::MultipleShootingCGMRESSolver<cgmres::OCP_generated_code, N, kmax> mpc(ocp, horizon, settings);
   mpc.set_uc(initializer.ucopt());
   mpc.init_x_lmd(t0, x0);
   mpc.init_dummy_mu();
@@ -58,7 +58,7 @@ int main() {
   cgmres::VectorX x = x0;
   cgmres::VectorX dx = cgmres::VectorX::Zero(x0.size());
 
-  const std::string log_name("../log/cartpole_error_monitoring"); 
+  const std::string log_name("../log/generated_code"); 
   cgmres::Logger logger(log_name);
 
   std::cout << "Start a simulation..." << std::endl;

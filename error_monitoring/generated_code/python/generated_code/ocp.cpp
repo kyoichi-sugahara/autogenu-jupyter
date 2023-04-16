@@ -18,7 +18,7 @@ namespace python {
 
 namespace py = pybind11;
 
-using OCP = OCP_cartpole_error_monitoring;
+using OCP = OCP_generated_code;
 
 PYBIND11_MODULE(ocp, m) { 
   py::class_<OCP>(m, "OCP")

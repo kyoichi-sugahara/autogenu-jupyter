@@ -7,8 +7,8 @@
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 
-#include "cgmres/single_shooting_cgmres_solver.hpp"
-#include "cgmres/python/single_shooting_cgmres_solver.hpp"
+#include "cgmres/zero_horizon_ocp_solver.hpp"
+#include "cgmres/python/zero_horizon_ocp_solver.hpp"
 #include "ocp.hpp"
 
 #include <iostream>
@@ -19,9 +19,8 @@ namespace python {
 
 namespace py = pybind11;
 
-constexpr int N = 100;
-constexpr int kmax = 5;
-DEFINE_PYBIND11_MODULE_SINGLE_SHOOTING_CGMRES_SOLVER(OCP_cartpole_error_monitoring, N, kmax)
+constexpr int kmax_init = 1;
+DEFINE_PYBIND11_MODULE_ZERO_HORIZON_OCP_SOLVER(OCP_generated_code, kmax_init)
 
 
 } // namespace python
