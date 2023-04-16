@@ -84,15 +84,15 @@ class AutoGenU(object):
     def get_ocp_name(self):
         return self.__ocp_name
 
-    def get_ocp_dir(self, ocp_dir: Optional[str]=None):
-        if ocp_dir is None:
+    def get_ocp_dir(self):
+        if self.__ocp_dir is None:
             return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name)
-        return os.path.join(os.getcwd(), os.path.abspath(ocp_dir), self.__ocp_name)
+        return os.path.join(os.getcwd(), os.path.abspath(self.__ocp_dir), self.__ocp_name)
 
-    def get_ocp_pybind_dir(self, ocp_pybind_dir: Optional[str]=None):
-        if ocp_pybind_dir is None:
-            return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name)
-        return os.path.join(os.getcwd(), os.path.abspath(ocp_pybind_dir), self.__ocp_name, 'python')
+    def get_ocp_pybind_dir(self):
+        if self.__ocp_dir is None:
+            return os.path.join(os.getcwd(), os.path.abspath('generated'), self.__ocp_name, 'python')
+        return os.path.join(os.getcwd(), os.path.abspath(self.__ocp_dir), self.__ocp_name, 'python')
 
     def get_ocp_build_dir(self):
         return os.path.join(os.getcwd(), self.get_ocp_dir(), 'build')
