@@ -66,7 +66,7 @@ int main() {
     const cgmres::VectorX x1 = cgmres::RK4(ocp, t, sampling_time, x, u); // the next state
     mpc.update(t, x); // update the MPC solution
 
-    logger.save(t, x, u, mpc.optError(), mpc.normDiff());
+    logger.save(t, x, u, mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
     x = x1;
     t = t + sampling_time;
   }
