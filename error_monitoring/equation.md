@@ -91,6 +91,17 @@ F(U(t),x(t),t)=\begin{bmatrix}
 \end{bmatrix}=0
 $$
 
+$\frac{\partial F}{\partial U} \dot{U}-ζF-\frac{\partial F}{\partial x} \dot{x}$
+
+ここで、$\frac{dx}{dt} = f(t,x,u)$を用いたことに注意してください。
+
+次に、$\frac{\partial F}{\partial x}$を$N \times 4$行列$A$、$\frac{\partial F}{\partial U}$を$N \times N$行列$B$として、$B\dot{U} = - \zeta F - A f(t,x,u)$とします。両辺に$B^{-1}$を左から掛けると、$\dot{U} = - B^{-1} \zeta F - B^{-1} A f(t,x,u)$となります。
+
+したがって、$\frac{\partial F}{\partial U} \dot{U} - \zeta F - \frac{\partial F}{\partial x} \dot{x} = B \dot{U} - \zeta F + A f(t,x,u)$を解くと、
+
+$\dot{U} = -B^{-1} \zeta F - B^{-1} A f(t,x,u)$
+
+
 ## 問題設定
 
 状態ベクトルは以下のように定義します。

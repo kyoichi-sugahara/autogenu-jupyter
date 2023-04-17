@@ -112,9 +112,9 @@ def set_nlp_type(auto_gen_u):
 
 
 def set_parameters(auto_gen_u, config):
-    auto_gen_u.add_control_input_bounds(
-        uindex=0, umin=-15.0, umax=15.0, dummy_weight=0.1
-    )
+    # auto_gen_u.add_control_input_bounds(
+    #     uindex=0, umin=-15.0, umax=15.0, dummy_weight=0.1
+    # )
     auto_gen_u.set_scalar_vars(["m_c", 2], ["m_p", 0.2], ["l", 0.5], ["g", 9.80665])
     auto_gen_u.set_array_var("q", [2.5, 10, 0.01, 0.01])
     auto_gen_u.set_array_var("r", [1])

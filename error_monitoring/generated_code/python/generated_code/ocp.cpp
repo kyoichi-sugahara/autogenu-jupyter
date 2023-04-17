@@ -80,26 +80,6 @@ PYBIND11_MODULE(ocp, m) {
           throw std::invalid_argument("[OCP]: 'r.size()' must be "+std::to_string(1)); 
         } Map<VectorX>(self.r.data(), self.r.size()) = v; })
 
-    .def_readonly_static("ubound_indices", &OCP::ubound_indices)
-    .def_property("umin", 
-      [](const OCP& self) { return Map<const VectorX>(self.umin.data(), self.umin.size()); },
-      [](OCP& self, const VectorX& v) { 
-        if (v.size() != self.umin.size()) { 
-          throw std::invalid_argument("[OCP]: 'umin.size()' must be "+std::to_string(self.umin.size()));
-        } Map<VectorX>(self.umin.data(), self.umin.size()) = v; })
-    .def_property("umax", 
-      [](const OCP& self) { return Map<const VectorX>(self.umax.data(), self.umax.size()); },
-      [](OCP& self, const VectorX& v) { 
-        if (v.size() != self.umax.size()) { 
-          throw std::invalid_argument("[OCP]: 'umax.size()' must be "+std::to_string(self.umax.size()));
-        } Map<VectorX>(self.umax.data(), self.umax.size()) = v; })
-    .def_property("dummy_weight", 
-      [](const OCP& self) { return Map<const VectorX>(self.dummy_weight.data(), self.dummy_weight.size()); },
-      [](OCP& self, const VectorX& v) { 
-        if (v.size() != self.dummy_weight.size()) {
-          throw std::invalid_argument("[OCP]: 'dummy_weight.size()' must be "+std::to_string(self.dummy_weight.size()));
-        } Map<VectorX>(self.dummy_weight.data(), self.dummy_weight.size()) = v; })
-
     .def_readonly_static("nx", &OCP::nx)
     .def_readonly_static("nu", &OCP::nu)
     .def_readonly_static("nc", &OCP::nc)

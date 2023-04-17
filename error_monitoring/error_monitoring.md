@@ -63,6 +63,10 @@ The following parameters are configurable
 | :--------------------- | ---- | ------- | ---------------------------- | ------------- |
 | `debug_param` | [-]  | boolean | Flag to output debug data | false         |
 
+## Future Improvements
+
+- 
+
 ## References
 
 TODO
