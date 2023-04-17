@@ -296,6 +296,12 @@ public:
   Scalar optError() const { return continuation_gmres_.optError(); }
 
   ///
+  /// @brief Gets the l2-norm of the current optimality errors.
+  /// @return The l2-norm of the current optimality errors.
+  ///
+  Scalar normDiff() const { return diff_norm_; }
+
+  ///
   /// @brief Computes and gets the l2-norm of the current optimality errors.
   /// @param[in] t Initial time of the horizon. 
   /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
@@ -312,6 +318,26 @@ public:
   }
 
   ///
+  /// @brief Gets the l2-norm of the current optimality errors.
+  /// @return The l2-norm of the current optimality errors.
+  ///
+  Scalar conditionNumber() const { return continuation_gmres_.conditionNumber(); }
+
+  ///
+  /// @brief Computes and gets the l2-norm of the current optimality errors.
+  /// @param[in] t Initial time of the horizon. 
+  /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
+  /// @return The l2-norm of the current optimality errors.
+  ///
+  template <typename VectorType>
+  Scalar conditionNumber(const Scalar t, const MatrixBase<VectorType>& x) {
+
+    continuation_gmres_.synchronize_ocp(); 
+    continuation_gmres_.eval_fonc(t, x, solution_);
+    return optError();
+  }
+
+  ///
   /// @brief Updates the solution by performing C/GMRES method.
   /// @param[in] t Initial time of the horizon. 
   /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
@@ -319,7 +345,6 @@ public:
   template <typename VectorType>
   void update(const Scalar t, const MatrixBase<VectorType>& x) {
     if (x.size() != nx) {
-      throw std::invalid_argument("[SingleShootingCGMRESSolver::update] x.size() must be " + std::to_string(nx));
     }
     if (settings_.verbose_level >= 1) {
       std::cout << "\n======================= update solution with C/GMRES =======================" << std::endl;
@@ -327,6 +352,8 @@ public:
 
     if (settings_.profile_solver) timer_.tick();
     continuation_gmres_.synchronize_ocp(); 
+    double norm_diff;
+    Vector<dim> initial_guess = solution_update_;
     const auto gmres_iter 
         = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
               continuation_gmres_, t, x.derived(), solution_, solution_update_);
@@ -342,6 +369,10 @@ public:
     if (settings_.verbose_level >= 2) {
       std::cout << "number of GMRES iter: " << gmres_iter << " (kmax: " << kmax << ")" << std::endl;
     }
+        // 計算結果と初期推定解の差のノルムを求める
+    const auto diff = solution_update_ - initial_guess;
+    diff_norm_ = diff.norm();
+    // std::cout << "norm_diff = " << diff_norm << std::endl;
   }
 
   ///
@@ -379,6 +410,7 @@ private:
   std::array<Vector<nuc>, N> ucopt_;
   std::array<Vector<nub>, N> dummyopt_;
   std::array<Vector<nub>, N> muopt_;
+  Scalar diff_norm_;
 
   Vector<dim> solution_, solution_update_; 
 

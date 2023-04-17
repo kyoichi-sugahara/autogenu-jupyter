@@ -25,7 +25,8 @@ public:
        t_log_(log_name+ "_t.log"), 
        x_log_(log_name+ "_x.log"), 
        u_log_(log_name + "_u.log"), 
-       opterr_log_(log_name + "_opterr.log") {
+       opterr_log_(log_name + "_opterr.log"),
+       diff_norm_log_(log_name + "_norm_diff.log") {
   }
 
   ///
@@ -36,6 +37,7 @@ public:
     x_log_.close();
     u_log_.close();
     opterr_log_.close();
+    diff_norm_log_.close();
   }
 
   ///
@@ -48,11 +50,12 @@ public:
   template <typename StateVectorType, typename ControlInputVectorType>
   void save(const Scalar t, const MatrixBase<StateVectorType>& x, 
             const MatrixBase<ControlInputVectorType >& u,
-            const double opterr) {
+            const double opterr, const double norm_diff) {
     t_log_ << t << '\n';
     x_log_ << x.transpose() << '\n';
     u_log_ << u.transpose() << '\n';
     opterr_log_ << opterr << '\n';
+    diff_norm_log_ << norm_diff << '\n';
   }
 
   ///
@@ -67,7 +70,7 @@ public:
 
 private:
   std::string log_name_;
-  std::ofstream t_log_, x_log_, u_log_, opterr_log_;
+  std::ofstream t_log_, x_log_, u_log_, opterr_log_, diff_norm_log_;
 };
 
 } // namespace cgmres

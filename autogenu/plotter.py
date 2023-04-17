@@ -23,11 +23,13 @@ class Plotter(object):
         self.__x_data = np.genfromtxt(os.path.join(log_dir, log_name+'_x.log'))
         self.__u_data = np.genfromtxt(os.path.join(log_dir, log_name+'_u.log'))
         self.__opterr_data = np.genfromtxt(os.path.join(log_dir, log_name+'_opterr.log'))
+        self.__diff_norm_data = np.genfromtxt(os.path.join(log_dir, log_name+'_norm_diff.log'))
         # Replace NaN with 0.
         self.__t_data[np.isnan(self.__t_data)] = 0
         self.__x_data[np.isnan(self.__x_data)] = 0
         self.__u_data[np.isnan(self.__u_data)] = 0
-        self.__opterr_data[np.isnan(self.__opterr_data)] = 0
+        self.__diff_norm_data[np.isnan(self.__diff_norm_data)] = 0
+        self.__diff_norm_data[np.isnan(self.__diff_norm_data)] = 0
         # Set dimensions of the state and the control input.
         if self.__x_data.shape[0] == self.__x_data.size:
             self.__dim_x= 1
@@ -43,7 +45,7 @@ class Plotter(object):
             self.__num_plots/np.sqrt(self.__num_plots)
         ))
         self.__num_plot_y = int(np.ceil(
-            self.__num_plots/self.__num_plot_x
+            self.__num_plots/self.__num_plot_x+1
         ))
         # Set default figure scales. 
         self.__figure_scale = 1
@@ -153,4 +155,14 @@ class Plotter(object):
         plt.plot(self.__t_data, np.log10(self.__opterr_data))
         plt.xlabel(r'${\rm Time}$ $[s]$')
         plt.ylabel(r'$\log_{10} \| {\rm Opt \; Error} \|$')
+        plt.xlim(self.__t_data[0], self.__t_data[-1])
+
+        plt.subplot(
+        self.__num_plot_y, 
+        self.__num_plot_x, 
+        self.__dim_x+self.__dim_u+2
+        )
+        plt.plot(self.__t_data, self.__diff_norm_data)
+        plt.xlabel(r'${\rm Time}$ $[s]$')
+        plt.ylabel(r'$\Delta x | = \sqrt{\sum_{i=1}^{n}(\Delta x_i)^2} \|$')
         plt.xlim(self.__t_data[0], self.__t_data[-1])
