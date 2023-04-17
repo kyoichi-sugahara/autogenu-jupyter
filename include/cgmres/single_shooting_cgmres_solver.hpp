@@ -295,11 +295,9 @@ public:
   ///
   Scalar optError() const { return continuation_gmres_.optError(); }
 
-  ///
-  /// @brief Gets the l2-norm of the current optimality errors.
-  /// @return The l2-norm of the current optimality errors.
-  ///
   Scalar normDiff() const { return diff_norm_; }
+
+  Scalar relativeStandardDeviation() const { return relative_standard_deviation_; }
 
   ///
   /// @brief Computes and gets the l2-norm of the current optimality errors.
@@ -317,24 +315,25 @@ public:
     return optError();
   }
 
-  ///
-  /// @brief Gets the l2-norm of the current optimality errors.
-  /// @return The l2-norm of the current optimality errors.
-  ///
-  Scalar conditionNumber() const { return continuation_gmres_.conditionNumber(); }
+  Scalar relativeStandardDeviation(Vector<dim> data) {
+      Scalar mean = 0.0, ssd = 0.0, rsd = 0.0;
+      int n = data.size();
 
-  ///
-  /// @brief Computes and gets the l2-norm of the current optimality errors.
-  /// @param[in] t Initial time of the horizon. 
-  /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
-  /// @return The l2-norm of the current optimality errors.
-  ///
-  template <typename VectorType>
-  Scalar conditionNumber(const Scalar t, const MatrixBase<VectorType>& x) {
+      // 平均値を計算
+      for (int i = 0; i < n; ++i) {
+          mean += data[i];
+      }
+      mean /= n;
 
-    continuation_gmres_.synchronize_ocp(); 
-    continuation_gmres_.eval_fonc(t, x, solution_);
-    return optError();
+      // 標本平均から各データポイントの距離の合計を計算
+      for (int i = 0; i < n; ++i) {
+          ssd += abs(data[i] - mean);
+      }
+
+      // 相対標準偏差を計算
+      rsd = (ssd / n) / mean * 100;
+
+      return rsd;
   }
 
   ///
@@ -369,9 +368,10 @@ public:
     if (settings_.verbose_level >= 2) {
       std::cout << "number of GMRES iter: " << gmres_iter << " (kmax: " << kmax << ")" << std::endl;
     }
-        // 計算結果と初期推定解の差のノルムを求める
+    // 計算結果と初期推定解の差のノルムを求める
     const auto diff = solution_update_ - initial_guess;
     diff_norm_ = diff.norm();
+    relative_standard_deviation_ = relativeStandardDeviation(solution_update_);
     // std::cout << "norm_diff = " << diff_norm << std::endl;
   }
 
@@ -410,7 +410,7 @@ private:
   std::array<Vector<nuc>, N> ucopt_;
   std::array<Vector<nub>, N> dummyopt_;
   std::array<Vector<nub>, N> muopt_;
-  Scalar diff_norm_;
+  Scalar diff_norm_,relative_standard_deviation_;
 
   Vector<dim> solution_, solution_update_; 
 
