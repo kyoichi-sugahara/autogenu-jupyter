@@ -166,7 +166,7 @@ class Plotter(object):
         )
         plt.plot(self.__t_data, self.__diff_norm_data)
         plt.xlabel(r'${\rm Time}$ $[s]$')
-        plt.ylabel(r'$\Delta x | = \sqrt{\sum_{i=1}^{n}(\Delta x_i)^2} \|$')
+        plt.ylabel(r'$ | \Delta x | = \| \sqrt{\sum_{i=1}^{n}(\Delta x_i)^2} \|$')
         plt.xlim(self.__t_data[0], self.__t_data[-1])
 
         plt.subplot(
@@ -176,5 +176,5 @@ class Plotter(object):
         )
         plt.plot(self.__t_data, self.__relative_standard_deviation_data)
         plt.xlabel(r'${\rm Time}$ $[s]$')
-        plt.ylabel(r'$CV = \frac{\sigma}{\mu} = \frac{\sqrt{\frac{\sum_{i=1}^{N}(x_i-\mu)^2}{N}}}{\frac{\sum_{i=1}^{N}x_i}{N}} \|$')
+        plt.ylabel(r'$CV = \frac{\sigma}{\mu} = \frac{\sqrt{\frac{\sum_{i=1}^{N}(x_i-\mu)^2}{N}}}{\frac{\sum_{i=1}^{N}x_i}{N}} $')
         plt.xlim(self.__t_data[0], self.__t_data[-1])
