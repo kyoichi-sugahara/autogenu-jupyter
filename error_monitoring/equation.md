@@ -191,6 +191,94 @@ $$
 
 $\zeta =\frac{1}{\Delta{t}}$のとき、修正量$\Delta{U}$はニュートン法に類似した条件によって決定されることになる。ただし、状態と時刻の変化$\Delta x$および$\Delta t$を陽に考慮しているため、ニュートン法のような反復は必要ない。(もうちょっと具体的にどういうことか追記する。)
 
+### ヤコビ行列の導出
+
+評価区間を$N$ステップに離散化し、時間刻みを$\Delta \tau = \frac{T}{N}$と定義します。評価区間上$i$番目の時間ステップにおける状態を${x_i^*(t)}$、入力を${u_i^*(t)}$、ラグランジュ乗数を${\lambda_i^*(t)}$と表します。
+
+停留条件$f(x(k), u(k), k) - x(k+1) = 0$、$\frac{\partial H(k)}{\partial x(k)} - \lambda(k)^\top = 0$を差分近似することによって得られる離散時間2点境界値問題は以下のようになります。
+$x_{i+1}^*(t) = x_i^*(t) + \Delta \tau f(x_i^*(t), u_i^*(t), i)$
+$\lambda_{i}^*(t) = \lambda_{i+1}^*(t) + \Delta \tau \frac{\partial H(i)}{\partial x_i^*(t)}$ for $i=1,\dots,N-1$
+$x_{0}^*(t)=x(0)$
+$\lambda_N^*(t) = \frac{\partial \varphi}{\partial x(N)}^\top$
+$\frac{\partial H(k)}{\partial u(k)} = 0$
+
+状態遷移方程式: $x_{i+1}^* = x_i^* + \Delta t f(x_i^*, u_i^*, i)$ （$i=0,\dots,N-1$）
+逆方向のアジョイント方程式: $\lambda_i^*(t) = \frac{\partial J}{\partial x_i}(x_i^*,u_i^*,i) + \frac{\partial H}{\partial x_i}(x_i^*,u_i^*,\lambda_{i+1}^*,i)$ （$i=N-1,\dots,0$）
+境界条件: $x_0^* = x_0$ および $\lambda_N^*= \frac{\partial \varphi}{\partial x_N}(x_N^*)$
+最適性条件: $\frac{\partial H}{\partial u_k}(x_k^*,u_k^*,\lambda_{k+1}^*,k) = 0$ （$k=0,\dots,N-1$）
+
+ここで、$x_i^*$ および $u_i^*$ は最適解、$\lambda_i^**$ はアジョイント変数、$\Delta t$ は離散時間ステップサイズ、$f$ は状態方程式、$H$ はラグランジュ関数、$J$ は目的関数、$\varphi$ は終端コスト、$x_0$ は初期状態を表します。逆方向のアジョイント方程式では、$\frac{\partial J}{\partial x_i}$ は目的関数 $J$ を $x_i$ で偏微分したものを表します。
+
+離散時間2点境界値問題の最適性条件は以下のようになります。
+$$
+F(U(t),x(t),t)=\begin{bmatrix}
+\frac{\partial H(x_0^*, u_0^*, \lambda_1^*, 0)}{\partial u_0} & \\
+\frac{\partial H(x_1^*, u_1^*, \lambda_2^*, 1)}{\partial u_1} & \\
+\vdots & \\
+\frac{\partial H(x_{N-1}^*, u_{N-1}^*, \lambda_N^*, N-1)}{\partial u_{N-1}} &
+\end{bmatrix}=0
+$$
+
+未知の制御入力の系列${u_i^*}_{k=0}^{N-1}$からなるベクトル$U(t)$を以下のように定義する。
+$$
+U = \begin{bmatrix} u_0^* \\ u_1^*\\ \vdots \\ u_{N-1}^* \end{bmatrix}
+$$
+
+
+状態の系列${x_i^*}_{k=0}^{N}$が$x(t)$と$U(t)$および$t$によってきまることが分かる。
+
+評価区間を$N$ステップに離散化し、時間刻みを$\Delta \tau = \frac{T}{N}$と定義します。評価区間上$i$番目の時間ステップにおける状態を${x_i^*(t)}$、入力を${u_i^*(t)}$、ラグランジュ乗数を${\lambda_i^*(t)}$と表します。
+
+停留条件$f(x(k), u(k), k) - x(k+1) = 0$、$\frac{\partial H(k)}{\partial x(k)} - \lambda(k)^\top = 0$を差分近似することによって得られる離散時間2点境界値問題は以下のようになります。
+$x_{i+1}^*(t) = x_i^*(t) + \Delta \tau f(x_i^*(t), u_i^*(t), i)$
+$\lambda_{i}^*(t) = \lambda_{i+1}^*(t) + \Delta \tau \frac{\partial H(i)}{\partial x_i^*(t)}$ for $i=1,\dots,N-1$
+$x_{0}^*(t)=x(0)$
+$\lambda_N^*(t) = \frac{\partial \varphi}{\partial x(N)}^\top$
+$\frac{\partial H(k)}{\partial u(k)} = 0$
+
+状態遷移方程式: $x_{i+1}^* = x_i^* + \Delta t f(x_i^*, u_i^*, i)$ （$i=0,\dots,N-1$）
+逆方向のアジョイント方程式: $\lambda_i^*(t) = \frac{\partial J}{\partial x_i}(x_i^*,u_i^*,i) + \frac{\partial H}{\partial x_i}(x_i^*,u_i^*,\lambda_{i+1}^*,i)$ （$i=N-1,\dots,0$）
+境界条件: $x_0^* = x_0$ および $\lambda_N^*= \frac{\partial \varphi}{\partial x_N}(x_N^*)$
+最適性条件: $\frac{\partial H}{\partial u_k}(x_k^*,u_k^*,\lambda_{k+1}^*,k) = 0$ （$k=0,\dots,N-1$）
+
+ここで、$x_i^*$ および $u_i^*$ は最適解、$\lambda_i^**$ はアジョイント変数、$\Delta t$ は離散時間ステップサイズ、$f$ は状態方程式、$H$ はラグランジュ関数、$J$ は目的関数、$\varphi$ は終端コスト、$x_0$ は初期状態を表します。逆方向のアジョイント方程式では、$\frac{\partial J}{\partial x_i}$ は目的関数 $J$ を $x_i$ で偏微分したものを表します。
+
+未知の制御入力の系列${u_i^*}_{k=0}^{N-1}$からなるベクトル$U(t)$を以下のように定義する。
+$$
+U = \begin{bmatrix} u_0^* \\ u_1^*\\ \vdots \\ u_{N-1}^* \end{bmatrix}
+$$
+
+このとき、$x(0)$が与えられ、$N=k$とすると、$x_{i}^*(t)$と$\lambda_{i}^*(t)$は以下のように求めることができる。
+
+離散時間2点境界値問題の最適性条件は以下のようになります。
+$$
+F(U(t),x(t),t)=\begin{bmatrix}
+\frac{\partial H(x_0^*, u_0^*, \lambda_1^*, 0)}{\partial u_0} & \\
+\frac{\partial H(x_1^*, u_1^*, \lambda_2^*, 1)}{\partial u_1} & \\
+\vdots & \\
+\frac{\partial H(x_{N-1}^*, u_{N-1}^*, \lambda_N^*, N-1)}{\partial u_{N-1}} &
+\end{bmatrix}=0
+$$
+
+1. 初期状態$x_{0}^*(t)$は既知で、$x_{0}^*(t) = x(0)$である。
+2. 状態方程式に基づき、$i = 0, 1, ..., N-1$について以下を繰り返す
+    $$
+    x_{i+1}^*(t) = x_i^*(t) + \Delta \tau f(x_i^*(t), u_i^*(t), i)
+    $$
+    このステップで、全ての$x_{i}^*(t)$が求まる。
+3. 最終状態でのラグランジュ乗数は以下で求められる：
+    $$\lambda_N^*(t) = \frac{\partial \varphi}{\partial x(N)}^\top$$
+4. アジョイント方程式に基づき、$i = N-1, N-2, ..., 1$について以下を繰り返す
+    $$\lambda_{i}^*(t) = \lambda_{i+1}^*(t) + \Delta \tau \frac{\partial H(i)}{\partial x_i^*(t)}$$
+    このステップで、全ての$\lambda_{i}^*(t)$が求まる。
+
+このとき、$x(0)$が与えられ、最適性条件$F(U(t),x(t),t)$に関するベクトル$U$のヤコビ行列の導出方法を示せ。
+
+
+
+
+
+
 ## 問題設定
 
 状態ベクトルは以下のように定義します。
