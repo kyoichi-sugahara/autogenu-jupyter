@@ -99,8 +99,97 @@ $\frac{\partial F}{\partial U} \dot{U}-ζF-\frac{\partial F}{\partial x} \dot{x}
 
 したがって、$\frac{\partial F}{\partial U} \dot{U} - \zeta F - \frac{\partial F}{\partial x} \dot{x} = B \dot{U} - \zeta F + A f(t,x,u)$を解くと、
 
-$\dot{U} = -B^{-1} \zeta F - B^{-1} A f(t,x,u)$
+$\dot{U} = -B^{-1} \zeta F - B^{-1} A f(t,x,u)$　と得られる。
 
+これを直接解くことが難しい理由を追記する。(非線形最適制御入門 p175)
+
+## 数値解法
+
+### GMRES法
+
+$\dot{U} = -B^{-1} \zeta F - B^{-1} A f(t,x,u)$ を直接的に解くことが難しいことから、GMRES法(Generalized minimal residual method)という連立一次方程式の解法を用いる。
+
+GMRES法の詳細は省略するが、行列$A$を正定とも対称とも限らない一般の正則行列として、
+$$
+Ax = b
+$$
+という連立1次方程式を解く際、$x$の初期値$x_0$を与えると、$x_0$に対する残差$r_0 = b - Ax_0$を計算し、$r_0$を最小化するような$x_1$を求める。このとき、$x_1$は$x_0$に対する残差$r_0$の直交成分になっている。この操作を繰り返すことで、$x$の近似解を求めることができる。
+
+クリロフ部分空間は、一般的に次のように定義されます。与えられたベクトル$x$と行列$A$に対して、次数$n-1$までの行列$A$の冪による$x$の像の集合を形成します。つまり、次のように表現されます。
+
+$$
+\mathcal{K}_k(A, x) = \text{span}\{x, Ax, A^2x, \ldots, A^{k-1}x\}
+$$
+
+ここで、$\text{span}\{v_1, v_2, ..., v_k\}$はベクトル$v_1, v_2, ..., v_k$によって張られる部分空間を示します。これは、これらのベクトルの線形結合全体の集合です。つまり、任意のスカラー$\alpha_1, \alpha_2, ..., \alpha_n$に対して、$\alpha_1v_1 + \alpha_2v_2 + ... + \alpha_nv_n$を含みます。
+
+GMRES法は次のような特徴をもつ。
+
+1. 理論的に未知変数ベクトルの次元に等しい回数の反復で収束が保証されるが、実際にはより少ない反復で十分な精度の解が得られることが多い。
+2. 各反復において行列$A$自体は必要無く、行列$A$と$\mathcal{K}_k(A, x)$の正規直行基底に属するベクトル$v_k$との積$Av_k$を1回だけ計算すればよい。
+
+モデル予測制御への適用では特に2番目の特徴が有効で、$F$のヤコビ行列$\frac{\partial F}{\partial U}$を直接求める必要がなくなり、計算量を削減することができる。
+
+### ヤコビ行列の近似
+
+ベクトル関数$F(U(t),x(t),t)$の$U$, $x$, $t$に関するヤコビ行列は次のように表されます。
+
+
+$$
+\begin{aligned}
+J_F(U,x,t) =
+\begin{bmatrix}
+\frac{\partial F}{\partial U} & \frac{\partial F}{\partial x} & \frac{\partial F}{\partial t}
+\end{bmatrix}
+\end{aligned}
+$$
+
+ベクトル$W$、$\omega$、およびスカラー$\omega$が与えられているとき、それらとヤコビ行列の積は次のようになります。
+
+$$
+\begin{aligned}
+J_F(U,x,t)
+\begin{bmatrix}
+W \\
+\omega \\
+\omega
+\end{bmatrix}=
+\begin{bmatrix}
+\frac{\partial F}{\partial U} & \frac{\partial F}{\partial x} & \frac{\partial F}{\partial t}
+\end{bmatrix}
+\begin{bmatrix}
+W \\
+\omega \\
+\omega
+\end{bmatrix} 
+= \frac{\partial F}{\partial U} W + \frac{\partial F}{\partial x} \omega + \frac{\partial F}{\partial t} \omega.
+\end{aligned}
+$$
+
+ここで、微小量を$h$とすると、前進差分を用いた方向微分の近似は次のようになります：
+
+$$
+\begin{aligned}
+\frac{F(U(t) + hW, x(t) + h\omega, t + h\omega) - F(U(t),x(t),t)}{h} \approx \frac{\partial F}{\partial U} W + \frac{\partial F}{\partial x} \omega + \frac{\partial F}{\partial t} \omega.
+\end{aligned}
+$$
+
+この式は、関数$F$が$U$、$x$、$t$で微分可能であるという仮定に基づいています。
+
+### 離散化
+
+$\Delta t$をサンプリング周期とし、$\zeta =\frac{1}{\Delta{t}}$、オイラー法における$U$の修正量を$\Delta{U}:=\dot{U} \Delta t$とすると、
+
+$$
+\frac{\partial F}{\partial U} \dot{U} = -ζF-\frac{\partial F}{\partial x} \dot{x}-\frac{\partial F}{\partial t} \dot{t}
+$$
+は以下の用に書き換えることができる。
+
+$$
+\frac{\partial F}{\partial U} \Delta{U} = - \zeta F - \frac{\partial F}{\partial x} \Delta x - \frac{\partial F}{\partial t} \Delta t
+$$
+
+$\zeta =\frac{1}{\Delta{t}}$のとき、修正量$\Delta{U}$はニュートン法に類似した条件によって決定されることになる。ただし、状態と時刻の変化$\Delta x$および$\Delta t$を陽に考慮しているため、ニュートン法のような反復は必要ない。(もうちょっと具体的にどういうことか追記する。)
 
 ## 問題設定
 
