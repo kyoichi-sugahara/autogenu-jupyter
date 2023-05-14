@@ -12,7 +12,7 @@ def main():
         "Tf": 2.0,  # Time horizon for the optimal control problem
         "alpha": 0.0,  # Soft horizon parameter
         "sampling_time": 0.001,  # Sampling time for the discrete-time optimal control problem
-        "N": 100,  # Number of discretization intervals
+        "N": 50,  # Number of discretized intervals
         "finite_difference_epsilon": 1.0e-08,  # Epsilon for finite difference approximations
         "zeta": 1000,  # Penalty parameter
         "kmax": 5,  # Maximum number of iterations for the semi-smooth Newton method
@@ -37,6 +37,9 @@ def main():
 
     # Set NLP type
     set_nlp_type(auto_gen_u)
+
+    # Derive Jacobian matrix,
+    # derive_jacobian_matrix(auto_gen_u)
 
     # Set OCP directory, generate main function and CMakeLists, and build and run the simulation
     build_and_run_simulation(auto_gen_u)
@@ -99,6 +102,10 @@ def create_autogenu_object(config):
 
     return auto_gen_u
 
+
+# def derive_jacobian_matrix(auto_gen_u):
+#     derive_jacobian_matrix = True
+#     auto_gen_u.derive_jacobian_matrix(derive_jacobian_matrix)
 
 def generate_ocp_definition(auto_gen_u):
     simplification = False
