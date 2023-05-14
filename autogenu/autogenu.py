@@ -229,7 +229,42 @@ class AutoGenU(object):
         for i in range(self.__nh):
             hu[nuc+i] = sympy.sqrt(u[nuc+i]**2 + h[i]**2 + fb_eps[i]) - (u[nuc+i] - h[i])
         phix = symutils.diff_scalar_func(phi, x)
-        self.__symbolic_functions = SymbolicFunctions(f, phix, hx, hu)
+        self.__symbolic_functions = SymbolicFunctions(f, phix, hx, hu)  
+
+    def derive_jacobian_matrix(self, derive_jacobian_matrix: bool):
+        """ Sets the flag for the derivation of the Jacobian matrix. 
+
+            Args: 
+                derive_jacobian_matrix: The flag for the derivation of the 
+                    Jacobian matrix. If True, the Jacobian matrix is derived. 
+                    If False, the Jacobian matrix is not derived. 
+        """
+        assert self.__solver_params is not None, \
+                "Symbolic functions are not set!. Before call this method, call set_functions()"
+        if derive_jacobian_matrix:
+            # Define symbolic variables
+            x = sympy.symbols('x[0:%d]' %(self.__nx))
+            u = sympy.symbols('u[0:%d]' %(self.__nu+self.__nc+self.__nh))
+            lmd = sympy.symbols('lmd[0:%d]' %(self.__nx))
+            x0 = sympy.symbols('x0') # Initial state as a variable
+
+            # Define state and adjoint equations
+            f = self.__symbolic_functions.f
+            tau = self.__horizon_params.Tf / self.__solver_params.N
+            state_equation = [x[i] - x[i-1] - tau * f[i] for i in range(1, self.__nx)]
+            state_equation.insert(0, x[0] - x0)
+            hx = self.__symbolic_functions.hx
+            adjoint_equation = [lmd[i] - lmd[i+1] - tau * hx[i] for i in range(self.__nx - 2, -1, -1)]
+
+            # last elements of adjoint_equation
+            adjoint_equation.extend([lmd[i] - phix_i for i, phix_i in enumerate(self.__symbolic_functions.phix)])
+            # Define equations and variables
+            equations = state_equation + adjoint_equation
+            variables = list(x) + list(lmd)
+
+            # Derive Jacobian matrix
+            jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
+            self.__jacobian_matrix = jacobian_matrix
 
     def add_control_input_bounds(
         self, uindex: int, umin, umax, dummy_weight

@@ -1,9 +1,26 @@
 import autogenu
+import subprocess
 import matplotlib.pyplot as plt
 from sympy import sin, cos, sqrt
 
+import sys
+
+import pdb
+# print(f"{sys._getframe().f_lineno} {__file__}")
+    # try:
+    #     # Autogenuコード
+    #     auto_gen_u.derive_jacobian_matrix(derive_jacobian_matrix)
+    # except Exception as e:
+    #     # 例外発生時に実行されるコード
+    #     exc_type, exc_value, exc_traceback = sys.exc_info()
+    #     print("*** Error during code generation:")
+    #     print(exc_value)  # エラーメッセージを表示
+    #     pdb.post_mortem()  # pdb デバッガーを起動する
+
+
 
 def main():
+    subprocess.run(["python3", "-m", "pip", "install", "."], cwd="../autogenu-jupyter")
     # Constants
     config = {
         "nx": 4,  # Number of states
@@ -39,7 +56,7 @@ def main():
     set_nlp_type(auto_gen_u)
 
     # Derive Jacobian matrix,
-    # derive_jacobian_matrix(auto_gen_u)
+    derive_jacobian_matrix(auto_gen_u)
 
     # Set OCP directory, generate main function and CMakeLists, and build and run the simulation
     build_and_run_simulation(auto_gen_u)
@@ -103,9 +120,10 @@ def create_autogenu_object(config):
     return auto_gen_u
 
 
-# def derive_jacobian_matrix(auto_gen_u):
-#     derive_jacobian_matrix = True
-#     auto_gen_u.derive_jacobian_matrix(derive_jacobian_matrix)
+def derive_jacobian_matrix(auto_gen_u):
+    derive_jacobian_matrix = True
+    auto_gen_u.derive_jacobian_matrix(derive_jacobian_matrix)
+
 
 def generate_ocp_definition(auto_gen_u):
     simplification = False
