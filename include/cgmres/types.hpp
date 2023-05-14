@@ -3,6 +3,9 @@
 
 #include "cgmres/thirdparty/eigen/Eigen/Core"
 
+#ifdef EIGEN_STACK_ALLOCATION_LIMIT
+#undef EIGEN_STACK_ALLOCATION_LIMIT
+#endif
 #define EIGEN_STACK_ALLOCATION_LIMIT 0 // this macro allows unlimited stack memory to avoid OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG static_assertion error.
 
 namespace cgmres {
