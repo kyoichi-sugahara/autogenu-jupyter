@@ -6,6 +6,7 @@ from typing import Optional
 import sympy
 import os
 import sys
+import numpy as np
 
 autogenu_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(autogenu_root)
@@ -231,40 +232,61 @@ class AutoGenU(object):
         phix = symutils.diff_scalar_func(phi, x)
         self.__symbolic_functions = SymbolicFunctions(f, phix, hx, hu)  
 
-    def derive_jacobian_matrix(self, derive_jacobian_matrix: bool):
-        """ Sets the flag for the derivation of the Jacobian matrix. 
-
-            Args: 
-                derive_jacobian_matrix: The flag for the derivation of the 
-                    Jacobian matrix. If True, the Jacobian matrix is derived. 
-                    If False, the Jacobian matrix is not derived. 
+    def derive_jacobian_matrix(self, flag: bool):
         """
-        assert self.__solver_params is not None, \
-                "Symbolic functions are not set!. Before call this method, call set_functions()"
-        if derive_jacobian_matrix:
-            # Define symbolic variables
-            x = sympy.symbols('x[0:%d]' %(self.__nx))
-            u = sympy.symbols('u[0:%d]' %(self.__nu+self.__nc+self.__nh))
-            lmd = sympy.symbols('lmd[0:%d]' %(self.__nx))
-            x0 = sympy.symbols('x0') # Initial state as a variable
+        Derive the Jacobian matrix if the flag is set to True.
 
-            # Define state and adjoint equations
-            f = self.__symbolic_functions.f
-            tau = self.__horizon_params.Tf / self.__solver_params.N
-            state_equation = [x[i] - x[i-1] - tau * f[i] for i in range(1, self.__nx)]
-            state_equation.insert(0, x[0] - x0)
-            hx = self.__symbolic_functions.hx
-            adjoint_equation = [lmd[i] - lmd[i+1] - tau * hx[i] for i in range(self.__nx - 2, -1, -1)]
+        Args:
+            flag (bool): The flag for deriving Jacobian matrix.
+                        If True, derive Jacobian Matrix. Otherwise, do nothing.
 
-            # last elements of adjoint_equation
-            adjoint_equation.extend([lmd[i] - phix_i for i, phix_i in enumerate(self.__symbolic_functions.phix)])
-            # Define equations and variables
-            equations = state_equation + adjoint_equation
-            variables = list(x) + list(lmd)
+        Raises:
+            AttributeError: If symbolic functions are not set, AttributeError is raised.
+        """
+        if self.__solver_params is None:
+            raise AttributeError("Symbolic functions are not set!. Before call this method, call set_functions()")
 
-            # Derive Jacobian matrix
-            jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
-            self.__jacobian_matrix = jacobian_matrix
+        if not flag:
+            return
+        
+
+
+        # Parameters 
+        nx = self.__nx
+        N = self.__solver_params.N
+        hx = self.__symbolic_functions.hx
+        Tf = self.__horizon_params.Tf
+
+        # Calculate derived symbolic equations
+        tau = Tf / N
+
+        # Define symbolic variables
+        x = sympy.symbols(f'x[0:{nx*N}]')
+        u = sympy.symbols(f'u[0:{self.__nu*N+self.__nc+self.__nh}]')
+        lmd = sympy.symbols(f'lmd[0:{self.__nx*(N)}]')
+        x0 = sympy.symbols(f'x0[0:{self.__nx}]')  # Initial state as variables
+        x_ref = sympy.symbols(f'x_ref[0:{nx}]')  # Reference state as variables
+        q = sympy.symbols(f'q[0:{nx}]')  # State cost matrix diagonal elements as variables
+
+        # Define symbolic functions
+        f = self.__symbolic_functions.f
+        phix = self.__symbolic_functions.phix
+
+        # Initialize the state equations with the initial conditions
+        state_equations = [xi - x0i for xi, x0i in zip(x[:nx], x0)]
+
+        # Compute each state based on the previous states and the control input
+        for i in range(nx, nx * N):
+            prev_x = [x[i-nx+j] for j in range(nx)]
+            subs_u = [(u[0], u[i // nx])]
+            subs_x = [(x[j], prev_x[j]) for j in range(nx)]
+            
+            f_term = f[i % 4].subs(subs_u).subs(subs_x)
+            state_equation = x[i] - prev_x[(i - nx) % nx] - tau * f_term
+            
+            state_equations.append(state_equation)
+
+        state_equation_matrix = np.reshape(state_equations, (nx, N),order='F')
 
     def add_control_input_bounds(
         self, uindex: int, umin, umax, dummy_weight
