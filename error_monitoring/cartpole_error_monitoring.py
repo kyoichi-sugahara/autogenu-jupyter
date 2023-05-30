@@ -29,7 +29,7 @@ def main():
         "Tf": 2.0,  # Time horizon for the optimal control problem
         "alpha": 0.0,  # Soft horizon parameter
         "sampling_time": 0.001,  # Sampling time for the discrete-time optimal control problem
-        "N": 50,  # Number of discretized intervals
+        "N": 5,  # Number of discretized intervals
         "finite_difference_epsilon": 1.0e-08,  # Epsilon for finite difference approximations
         "zeta": 1000,  # Penalty parameter
         "kmax": 5,  # Maximum number of iterations for the semi-smooth Newton method

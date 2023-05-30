@@ -256,7 +256,6 @@ class AutoGenU(object):
         # Parameters 
         nx = self.__nx
         N = self.__solver_params.N
-        hx = self.__symbolic_functions.hx
         Tf = self.__horizon_params.Tf
 
         # Calculate derived symbolic equations
@@ -273,6 +272,7 @@ class AutoGenU(object):
         # Define symbolic functions
         f = self.__symbolic_functions.f
         phix = self.__symbolic_functions.phix
+        hx = self.__symbolic_functions.hx
 
         # Initialize the state equations with the initial conditions
         state_equations = [xi - x0i for xi, x0i in zip(x[:nx], x0)]
@@ -321,8 +321,9 @@ class AutoGenU(object):
             hx_substituted = []
             for term in hx:
                 subs_dict = {}
-                for i in range(nx, nx*N):
-                    subs_dict[x[i]] = state_equations[i]
+                for j in range(nx, nx*N):
+                    print(j)
+                    subs_dict[x[j]] = state_equations[j]
                 pdb.set_trace() 
                 term_substituted = term.subs(subs_dict)
                 hx_substituted.append(term_substituted)
