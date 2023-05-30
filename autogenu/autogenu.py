@@ -2,11 +2,13 @@ import subprocess
 import platform
 from enum import Enum, auto
 from collections import namedtuple
-from typing import Optional
 import sympy
 import os
 import sys
 import numpy as np
+
+import pdb
+
 
 autogenu_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(autogenu_root)
@@ -285,8 +287,259 @@ class AutoGenU(object):
             state_equation = x[i] - prev_x[(i - nx) % nx] - tau * f_term
             
             state_equations.append(state_equation)
+        # pdb.set_trace() 
+
+        # Calculate final state Lagrange multiplier
+        for i in range(nx):
+            lambda_N = [term.subs({x[i]: x[i+nx*(N-1)] for i in range(nx)}) for term in phix]
+        
+        # pdb.set_trace() 
+
+        # backward adjoint equation
+        # for i in range(nx*(N-1)-1, -1, -nx):
+        #     lmd[i:i+nx] = [lmd[i+nx+j] + tau * dH_dx(i+j, x, u, lmd) for j in range(nx)]
+
+        adjoint_equation = [lmd[nx * (N - 1) + i] - lambda_N[i] for i in range(nx)]
+        # pdb.set_trace() 
+        # Check if hx is a list
+        if isinstance(hx, list):
+            print("hx is a list.")
+        else:
+            print("hx is not a list.")
+
+        # Check if all items in hx are sympy expressions
+        if all(isinstance(item, sympy.Expr) for item in hx):
+            print("All items in hx are sympy expressions.")
+        else:
+            print("Not all items in hx are sympy expressions.")
+        for i in range(nx * (N - 2), nx, -nx):
+            print(i)
+            # pdb.set_trace() 
+            # hx_substituted = [hx.subs({x[i]: state_equations[i-nx] for i in range(nx, nx*N)}) for term in hx]
+            # hx_substituted = [hx.subs({x[i]: state_equations[i] for i in range(nx, nx*N)}) for term in hx]
+            # hx_substituted = [term.subs({x[i]: state_equations[i] for i in range(nx, nx*N)}) for term in hx]
+            hx_substituted = []
+            for term in hx:
+                subs_dict = {}
+                for i in range(nx, nx*N):
+                    subs_dict[x[i]] = state_equations[i]
+                pdb.set_trace() 
+                term_substituted = term.subs(subs_dict)
+                hx_substituted.append(term_substituted)
+            # H_i = hx(x[i], u[i], i) + lmd[i].dot(f(x[i], u[i], i))
+            # adjoint_equation.append(lmd[i-1] - lmd[i] - tau * H_i.diff(x[i]))
+        print(len(adjoint_equation))
+        pdb.set_trace() 
+
+        equations = state_equation + adjoint_equation
+
+        variables = x + lmd
+        self.__jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
+
 
         state_equation_matrix = np.reshape(state_equations, (nx, N),order='F')
+        
+
+
+        state_equation_matrix = np.reshape(state_equations, (nx, N),order='F')
+        # pdb.set_trace()
+        for i in range(1, len(state_equation_matrix[0])):  # 各列について
+            print(i)
+            current_state_equation_matrix = [eq[i-1] for eq in state_equation_matrix]  # 現在の列の等式を取得
+
+            # 未知数を特定
+            unknowns = [x[j] for j in range((i-1)*nx, (i-1)*nx+nx)]
+            # pdb.set_trace() 
+            # 等式を解く
+            solutions = sympy.solve(current_state_equation_matrix, unknowns)
+            # pdb.set_trace() 
+            # # 次の列の等式を更新（解を用いて等式内の未知数を置換）
+            # for j in range(i+1, len(state_equation_matrix[0])):
+            #     for eq in state_equation_matrix:
+            #         eq[j] = eq[j].subs(solutions)
+            # 次の列の等式を更新（解を用いて等式内の未知数を置換）
+            for j in range(i, len(state_equation_matrix[0])):
+                for k in range(len(state_equation_matrix)):
+                    print(j,k)
+                    state_equation_matrix[k][j] = state_equation_matrix[k][j].subs(solutions)
+            print(state_equation_matrix)
+            # pdb.set_trace() 
+
+        # pdb.set_trace() 
+
+
+
+        # 状態方程式の代入辞書を作成します。
+        subs_dict = {x[i]: state_equations[i] for i in range(nx, nx*N)}
+        # 各x[i]を状態方程式で置き換えます。
+        state_equations_substituted = [eq.subs(subs_dict) for eq in state_equations]
+
+        # pdb.set_trace() 
+        while True:
+            print(state_equations_substituted)
+            state_equations_substituted = [eq.subs(subs_dict) for eq in state_equations]
+            if state_equations == state_equations_substituted:
+                break
+            else:
+                state_equations = state_equations_substituted
+
+        # # Substitute each x[i] in state_equations with its corresponding equation
+        # state_equations_substituted = [eq.subs(subs_dict) for eq in state_equations]
+
+        # Create state equation matrix
+        # state_equation_matrix = Matrix(state_equations_substituted)
+
+        # Output the final state equations
+        # print(state_equation_matrix)
+        state_equation_matrix = np.reshape(state_equations, (nx, N),order='F')
+
+        # Replace x_ref and q in hx
+        hx_replaced = [expr.subs({x_ref[i]: x_ref_val, q[i]: q_val}) for i, (expr, x_ref_val, q_val) in enumerate(zip(hx, x_ref, q))]
+
+        # Calculate terminal state constraint
+        lambda_final = sympy.Matrix(phix).T
+
+        # Create a dictionary for substitutions
+        substitutions = {x[i]: state_equation_matrix[i, N-1] for i in range(nx)}
+
+        # Perform the substitutions
+        lambda_final_substitutions = lambda_final.subs(substitutions)
+
+        # pdb.set_trace() 
+
+        first_part = [lmd[-nx + i] - lambda_final[0, i] for i in range(nx)]
+        
+        # second_part = [lmd[i] - lmd[i + nx] - tau * sympy.Matrix(hx_replaced).diff(x[i])[0, 0].subs({x[j]: x[i - j] for j in range(1, nx)}).subs(u[0], u[(i - nx) // nx]) for i in reversed(range(nx, nx * (N - 1)))]
+        # second_part = [lmd[i + 1] - lmd[i] - tau * sympy.Matrix(hx_replaced).diff(x[i])[0, 0] for i in range(nx * (N - 1) - 1)]
+        second_part = []
+        for i in range(nx * (N - 1) - 2, -1, -1):
+            element = lmd[i + 1] - lmd[i] - tau * sympy.Matrix(hx_replaced).diff(x[i])[0, 0]
+            second_part.append(element)
+            # pdb.set_trace() 
+
+        
+        adjoint_equation = first_part + second_part
+        return state_equation + adjoint_equation
+
+        # lambda_final = sympy.Matrix([phix.diff(xj) for xj in x[-nx:]]).T
+        # adjoint_equation = [lmd[-nx:] - lambda_final] + [lmd[i] - lmd[i + nx] - tau * sympy.Matrix(hx).diff(x[i]).subs({x[j]: x[i - j] for j in range(1, nx)}).subs(u[0], u[(i - nx) // nx]) for i in reversed(range(nx, nx * (N - 1)))]
+        # pdb.set_trace() 
+        print(len(adjoint_equation))
+       
+
+
+        # state_equation = initial_state_equations + [x[i+1] - x[i] - tau * f(x[i], u[i], i) for i in range(0, nx*(self.__solver_params.N-1))]
+        # state_equation = initial_state_equations + [x[i+1] - x[i] - tau * self.f[i % self.nx].subs({self.f[i % self.nx].args[0]: x[i], self.f[i % self.nx].args[1]: u[i], self.f[i % self.nx].args[2]: i}) for i in range(0, self.nx*(self.N-1))]
+        # state_equation = initial_state_equations + [x[i+1] - x[i] - tau * f[i % nx].subs({f[i % nx].args[0]: x[i], f[i % nx].args[1]: u[i], f[i % nx].args[2]: i}) for i in range(0, nx*(self.__solver_params.N-1))]
+        # state_equation = initial_state_equations + [x[i+1] - x[i] - tau * f[i % self.__nx].subs({f[i % nx].args[j]: x[i] if j == 0 else (u[i] if j == 1 else i) for j in range(len(f[i % nx].args))}) for i in range(0, nx*(self.__solver_params.N-1))]
+
+
+        # state_equation = initial_state_equations
+
+        # for i in range(0, len(f) * (N - 1)):
+        #     pdb.set_trace()
+        #     equation = x[i + 1] - x[i] - tau * f[i % len(f)].subs(
+        #         {
+        #             f[i % len(f)].args[0]: x[i],
+        #             f[i % len(f)].args[1]: u[i],
+        #             f[i % len(f)].args[2]: i,
+        #         }
+        #     )
+        #     state_equation.append(equation)
+            
+
+        # state_equation = initial_state_equations + [
+        #     x[i + 1] - x[i] - tau * f[i % len(f)].subs(
+        #         {
+        #             f[i % len(f)].args[0]: x[i],
+        #             f[i % len(f)].args[1]: u[i],
+        #             f[i % len(f)].args[2]: i,
+        #         }
+        #     )
+        #     pdb.set_trace() 
+        #     for i in range(0, len(f) * (N - 1))
+        # ]
+
+
+        print(len(state_equation))
+        # Calculate final state Lagrange multiplier
+        lambda_N = sympy.Matrix([phix.diff(x[nx*self.__solver_params.N - nx + i]) for i in range(nx)]).transpose()
+        print(len(lambda_N))
+        # Construct adjoint equation
+        adjoint_equation = [lmd[nx * (self.__solver_params.N - 1) + i] - lambda_N[i] for i in range(nx)]
+        for i in range(nx * (self.__N - 1), nx, -1):
+            H_i = self.__hx(x[i], u[i], i) + lmd[i].dot(self.__f(x[i], u[i], i))
+            adjoint_equation.append(lmd[i-1] - lmd[i] - tau * H_i.diff(x[i]))
+        print(len(adjoint_equation))
+
+        # pdb.set_trace() 
+        equations = state_equation + adjoint_equation
+        variables = x + lmd
+        self.__jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
+        # pdb.set_trace() 
+
+
+        # return state_equation + adjoint_equation
+        
+        #  Construct symbolic equations
+
+        # The state_equation list is a list of equations necessary to solve a control problem, where each equation represents the state equation x[i+1] = x[i] + tau * f[i%nx].
+        # state_equation = [x[i] - x[i - nx] - tau * f[i%nx] for i in range(nx, nx*self.__solver_params.N+1)]
+        # state_equation = [x[i] - x[i - nx] - tau * f[i%self.__nx] for i in range(self.__nx+1, self.__nx*self.__solver_params.N+2)]
+        # state_equation = [x[i] - x0[i%self.__nx] - tau * f[i%self.__nx] for i in range(self.__nx, self.__nx*self.__solver_params.N+1)]
+        # state_equation = [x[i] - x[i - self.__nx] - tau * f[i%self.__nx] for i in range(self.__nx, self.__nx*self.__solver_params.N+1)]
+        # state_equation = [x[i] - x[i - self.__nx] - tau * f[i%self.__nx] for i in range(self.__nx, self.__nx*self.__solver_params.N+self.__nx)]
+        # state_equation = [x[i+1] - x[i] - tau * f[i%self.__nx] for i in range(0, self.__nx*self.__solver_params.N)]
+        # [state_equation.insert(0, xi - x0i) for xi, x0i in zip(x[:self.__nx], x0)]
+        # initial_state_equations = [xi - x0i for xi, x0i in zip(x[:self.__nx], x0)]
+        # state_equation = initial_state_equations + [x[i+1] - x[i] - tau * f[i%self.__nx] for i in range(0, self.__nx*(self.__solver_params.N-1))]
+        
+        # adjoint_equation = [lmd[i] - lmd[i - 1] - tau * hx[i%self.__nx] for i in range(self.__nx*(self.__solver_params.N-1), self.__nx-1, -1)]
+        # adjoint_equation = [lmd[i] - lmd[i - 1] - tau * hx[i%self.__nx] for i in range(self.__nx*(self.__solver_params.N-1), -1, -1)][1:]
+        # 
+        # adjoint_equation = [lmd[i] - lmd[i - 1] - tau * hx[i%self.__nx] for i in range(self.__nx*(self.__solver_params.N-1), -1, -1)][1:]
+        # terminal_adjoint_equation = 
+        # .insert(0, lmd[0] - phix[0])
+        # adjoint_equation = [lmd[i] - lmd[i - 1] - tau * hx[i%self.__nx] for i in range(self.__nx*(self.__solver_params.N-1), 0, -1)]
+        # print(len(adjoint_equation)) 
+        # adjoint_equation.insert(0, lmd[0] - phix[0])
+        # print(len(adjoint_equation)) 
+        # adjoint_equation += [lmd[self.__nx*(self.__solver_params.N)+i] - phix_i for i, phix_i in enumerate(phix)]
+        # print(len(adjoint_equation))       
+        #  
+        # adjoint_equation += [lmd[i] - phix_i for i, phix_i in enumerate(phix, self.__nx*(self.__solver_params.N))]
+        # print(len(adjoint_equation))
+        # Construct symbolic equations and derive Jacobian matrix
+
+        # Add debug prints
+        # print('Length of phix:', len(phix))
+        # print('Indices:', [self.__nx*(self.__solver_params.N)+i for i, phix_i in enumerate(phix)])
+
+
+        # if derive_jacobian_matrix:
+        #     # Define symbolic variables
+        #     x = sympy.symbols('x[0:%d]' %(self.__nx))
+        #     u = sympy.symbols('u[0:%d]' %(self.__nu+self.__nc+self.__nh))
+        #     lmd = sympy.symbols('lmd[0:%d]' %(self.__nx))
+        #     x0 = sympy.symbols('x0') # Initial state as a variable
+
+        #     # Define state and adjoint equations
+        #     f = self.__symbolic_functions.f
+        #     tau = self.__horizon_params.Tf / self.__solver_params.N
+        #     state_equation = [x[i] - x[i-1] - tau * f[i] for i in range(1, self.__nx)]
+        #     state_equation.insert(0, x[0] - x0)
+        #     hx = self.__symbolic_functions.hx
+        #     adjoint_equation = [lmd[i] - lmd[i+1] - tau * hx[i] for i in range(self.__nx - 2, -1, -1)]
+
+        #     # last elements of adjoint_equation
+        #     adjoint_equation.extend([lmd[i] - phix_i for i, phix_i in enumerate(self.__symbolic_functions.phix)])
+        #     # Define equations and variables
+        #     equations = state_equation + adjoint_equation
+        #     variables = list(x) + list(lmd)
+
+        #     # Derive Jacobian matrix
+        #     jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
+        #     self.__jacobian_matrix = jacobian_matrix
 
     def add_control_input_bounds(
         self, uindex: int, umin, umax, dummy_weight
