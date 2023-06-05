@@ -269,7 +269,7 @@ class AutoGenU(object):
         x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
         u = sympy.symbols('u[0:%d]' % (nu))  # Control inputs
         u_matrix = sympy.Matrix([sympy.symbols(f'u{i}_{j}') for i in range(nu) for j in range(N)]).reshape(nu, N)
-        lm = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
+        lmd = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
         lmd_matrix = sympy.Matrix([sympy.symbols(f'lmd{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
         x0 = sympy.Matrix(sympy.symbols(f'x0:{self.__nx}'))  # Initial state as variables
         x_ref = sympy.Matrix(sympy.symbols(f'x_ref:{nx}'))  # Reference state as variables
@@ -302,7 +302,7 @@ class AutoGenU(object):
             # Append the row to the state equations Matrix
             state_equations = state_equations.row_join(state_eq_column)
 
-        # Calculate final state Lagrange multiplier lambda_N = ∂φ/∂x(N)
+        # Calculate final state Lagrange multiplier lambda_N = ∂φ/∂x{N}
         lambda_N = sympy.Matrix([term.subs({x[i]: x_matrix[i, N-1] for i in range(nx)}) for term in phix])
 
         # Initialize the Lagrange multipliers with the final conditions
@@ -319,17 +319,15 @@ class AutoGenU(object):
                 # substitute the next state and the current control/state
                 subs_x = [(x[k], current_x[k]) for k in range(nx)]
                 subs_u = [(u[k], current_u[k]) for k in range(nu)]
-                subs_next_lmd = [(lm[k], next_lmd[k]) for k in range(nx)]
+                subs_next_lmd = [(lmd[k], next_lmd[k]) for k in range(nx)]
                 # ∂h/∂x{i}
                 hx_term = hx[j].subs(subs_u).subs(subs_x).subs(subs_next_lmd)
-                # λ(i) = λ(i+1) - tau * ∂h/∂x{i}
-                adjoint_equation = lmd_matrix[j, i] - next_lmd[j] + tau * hx_term
+                # λ(i) = λ(i+1) + tau * ∂h/∂x{i}
+                adjoint_equation = lmd_matrix[j, i] - next_lmd[j] - tau * hx_term
                 # Convert adjoint_equation to Matrix and append it to the column
                 adjoint_eq_column = adjoint_eq_column.col_join(sympy.Matrix([adjoint_equation]))
             # Prepend the column to the adjoint equations Matrix
-            adjoint_equations = adjoint_eq_column.row_join(adjoint_equations)
-
-        # # pdb.set_trace()
+            adjoint_equations = adjoint_eq_column.row_join(adjoint_equations) if adjoint_equations else adjoint_eq_column
         # for i in range(1, len(state_equation_matrix[0])):  # 各列について
         #     print(i)
         #     current_state_equation_matrix = [eq[i-1] for eq in state_equation_matrix]  # 現在の列の等式を取得
