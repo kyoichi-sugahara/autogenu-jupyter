@@ -233,26 +233,8 @@ class AutoGenU(object):
             hu[nuc+i] = sympy.sqrt(u[nuc+i]**2 + h[i]**2 + fb_eps[i]) - (u[nuc+i] - h[i])
         phix = symutils.diff_scalar_func(phi, x)
         self.__symbolic_functions = SymbolicFunctions(f, phix, hx, hu)  
-
-    def derive_jacobian_matrix(self, flag: bool):
-        """
-        Derive the Jacobian matrix if the flag is set to True.
-
-        Args:
-            flag (bool): The flag for deriving Jacobian matrix.
-                        If True, derive Jacobian Matrix. Otherwise, do nothing.
-
-        Raises:
-            AttributeError: If symbolic functions are not set, AttributeError is raised.
-        """
-        if self.__solver_params is None:
-            raise AttributeError("Symbolic functions are not set!. Before call this method, call set_functions()")
-
-        if not flag:
-            return
-        
-
-
+    
+    def formulate_state_equations(self):
         # Parameters 
         nx = self.__nx
         nu = self.__nu
@@ -269,16 +251,10 @@ class AutoGenU(object):
         x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
         u = sympy.symbols('u[0:%d]' % (nu))  # Control inputs
         u_matrix = sympy.Matrix([sympy.symbols(f'u{i}_{j}') for i in range(nu) for j in range(N)]).reshape(nu, N)
-        lmd = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
-        lmd_matrix = sympy.Matrix([sympy.symbols(f'lmd{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
         x0 = sympy.Matrix(sympy.symbols(f'x0:{self.__nx}'))  # Initial state as variables
-        x_ref = sympy.Matrix(sympy.symbols(f'x_ref:{nx}'))  # Reference state as variables
-        q = sympy.Matrix(sympy.symbols(f'q:{nx}'))  # State cost matrix diagonal elements as variables
 
         # Define symbolic functions
         f = self.__symbolic_functions.f
-        phix = self.__symbolic_functions.phix
-        hx = self.__symbolic_functions.hx
 
         # Initialize the state equations with the initial conditions
         state_equations = sympy.Matrix(x_matrix[:, 0] - x0)
@@ -301,6 +277,33 @@ class AutoGenU(object):
                 state_eq_column = state_eq_column.col_join(sympy.Matrix([state_equation]))
             # Append the row to the state equations Matrix
             state_equations = state_equations.row_join(state_eq_column)
+
+        self.__state_equations = state_equations
+        return 
+
+    def formulate_adjoint_equations(self):
+        # Parameters 
+        nx = self.__nx
+        nu = self.__nu
+        nc = self.__nc
+        nh = self.__nh
+        N = self.__solver_params.N
+        Tf = self.__horizon_params.Tf
+
+        # Calculate derived symbolic equations
+        tau = Tf / N
+
+        # Define symbolic variables
+        x = sympy.symbols('x[0:%d]' % (nx))  # State variables
+        x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
+        u = sympy.symbols('u[0:%d]' % (nu))  # Control inputs
+        u_matrix = sympy.Matrix([sympy.symbols(f'u{i}_{j}') for i in range(nu) for j in range(N)]).reshape(nu, N)
+        lmd = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
+        lmd_matrix = sympy.Matrix([sympy.symbols(f'lmd{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
+
+        # Define symbolic functions
+        phix = self.__symbolic_functions.phix
+        hx = self.__symbolic_functions.hx
 
         # Calculate final state Lagrange multiplier lambda_N = ∂φ/∂x{N}
         lambda_N = sympy.Matrix([term.subs({x[i]: x_matrix[i, N-1] for i in range(nx)}) for term in phix])
@@ -328,6 +331,33 @@ class AutoGenU(object):
                 adjoint_eq_column = adjoint_eq_column.col_join(sympy.Matrix([adjoint_equation]))
             # Prepend the column to the adjoint equations Matrix
             adjoint_equations = adjoint_eq_column.row_join(adjoint_equations) if adjoint_equations else adjoint_eq_column
+        
+        self.__adjoint_equations = adjoint_equations
+
+        return 
+
+
+    def derive_jacobian_matrix(self, flag: bool):
+        """
+        Derive the Jacobian matrix if the flag is set to True.
+
+        Args:
+            flag (bool): The flag for deriving Jacobian matrix.
+                        If True, derive Jacobian Matrix. Otherwise, do nothing.
+
+        Raises:
+            AttributeError: If symbolic functions are not set, AttributeError is raised.
+        """
+        if self.__solver_params is None:
+            raise AttributeError("Symbolic functions are not set!. Before call this method, call set_functions()")
+
+        if not flag:
+            return
+
+        self.formulate_state_equations()
+        self.formulate_adjoint_equations()
+
+
         # for i in range(1, len(state_equation_matrix[0])):  # 各列について
         #     print(i)
         #     current_state_equation_matrix = [eq[i-1] for eq in state_equation_matrix]  # 現在の列の等式を取得
@@ -409,7 +439,7 @@ class AutoGenU(object):
         # lambda_final = sympy.Matrix([phix.diff(xj) for xj in x[-nx:]]).T
         # adjoint_equation = [lmd[-nx:] - lambda_final] + [lmd[i] - lmd[i + nx] - tau * sympy.Matrix(hx).diff(x[i]).subs({x[j]: x[i - j] for j in range(1, nx)}).subs(u[0], u[(i - nx) // nx]) for i in reversed(range(nx, nx * (N - 1)))]
         # pdb.set_trace() 
-        print(len(adjoint_equation))
+        # print(len(adjoint_equation))
        
 
 
@@ -446,21 +476,21 @@ class AutoGenU(object):
         # ]
 
 
-        print(len(state_equation))
+        # print(len(state_equation))
         # Calculate final state Lagrange multiplier
-        lambda_N = sympy.Matrix([phix.diff(x[nx*self.__solver_params.N - nx + i]) for i in range(nx)]).transpose()
-        print(len(lambda_N))
+        # lambda_N = sympy.Matrix([phix.diff(x[nx*self.__solver_params.N - nx + i]) for i in range(nx)]).transpose()
+        # print(len(lambda_N))
         # Construct adjoint equation
-        adjoint_equation = [lmd[nx * (self.__solver_params.N - 1) + i] - lambda_N[i] for i in range(nx)]
-        for i in range(nx * (self.__N - 1), nx, -1):
-            H_i = self.__hx(x[i], u[i], i) + lmd[i].dot(self.__f(x[i], u[i], i))
-            adjoint_equation.append(lmd[i-1] - lmd[i] - tau * H_i.diff(x[i]))
-        print(len(adjoint_equation))
+        # adjoint_equation = [lmd[nx * (self.__solver_params.N - 1) + i] - lambda_N[i] for i in range(nx)]
+        # for i in range(nx * (self.__N - 1), nx, -1):
+        #     H_i = self.__hx(x[i], u[i], i) + lmd[i].dot(self.__f(x[i], u[i], i))
+        #     adjoint_equation.append(lmd[i-1] - lmd[i] - tau * H_i.diff(x[i]))
+        # print(len(adjoint_equation))
 
         # pdb.set_trace() 
-        equations = state_equation + adjoint_equation
-        variables = x + lmd
-        self.__jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
+        # equations = state_equation + adjoint_equation
+        # variables = x + lmd
+        # self.__jacobian_matrix = sympy.Matrix(equations).jacobian(variables)
         # pdb.set_trace() 
 
 
