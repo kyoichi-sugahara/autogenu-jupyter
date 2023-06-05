@@ -304,7 +304,6 @@ class AutoGenU(object):
 
         # Calculate final state Lagrange multiplier
         lambda_N = [term.subs({x[i]: x_matrix[i, N-1] for i in range(nx)}) for term in phix]
-        pdb.set_trace() 
 
         # backward adjoint equation
         adjoint_equation = [lmd_matrix[i, N - 1] - lambda_N[i] for i in range(nx)]
