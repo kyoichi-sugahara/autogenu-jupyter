@@ -5,7 +5,6 @@ from collections import namedtuple
 import sympy
 import os
 import sys
-import numpy as np
 
 import pdb
 
@@ -279,7 +278,29 @@ class AutoGenU(object):
             state_equations = state_equations.row_join(state_eq_column)
 
         self.__state_equations = state_equations
-        return 
+        return
+
+    def substitute_state_equations(self):
+
+        # Parameters 
+        nx = self.__nx
+        nu = self.__nu
+        nc = self.__nc
+        nh = self.__nh
+        N = self.__solver_params.N
+
+        # Define symbolic variables
+        x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
+        state_equations = self.__state_equations
+
+        state_time_series = state_equations*(-1)+x_matrix
+
+        for i in range(state_time_series.shape[1]-1):  # iterate over columns
+            subs_x = [(x_matrix[j,i],state_time_series[j,i]) for j in range(nx)]
+            state_time_series[:, i+1] = state_time_series[:, i+1].subs(subs_x)
+            
+        self.__state_time_series = state_time_series
+        return
 
     def formulate_adjoint_equations(self):
         # Parameters 
@@ -356,6 +377,8 @@ class AutoGenU(object):
 
         self.formulate_state_equations()
         self.formulate_adjoint_equations()
+        self.substitute_state_equations()
+        pdb.set_trace() 
 
 
         # for i in range(1, len(state_equation_matrix[0])):  # 各列について
