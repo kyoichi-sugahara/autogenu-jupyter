@@ -20,7 +20,7 @@ import pdb
 
 
 def main():
-    subprocess.run(["python3", "-m", "pip", "install", "."], cwd="../autogenu-jupyter")
+    # subprocess.run(["python3", "-m", "pip", "install", "."], cwd="../autogenu-jupyter")
     # Constants
     config = {
         "nx": 4,  # Number of states

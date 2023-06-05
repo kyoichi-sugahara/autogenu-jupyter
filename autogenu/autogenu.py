@@ -255,6 +255,9 @@ class AutoGenU(object):
 
         # Parameters 
         nx = self.__nx
+        nu = self.__nu
+        nc = self.__nc
+        nh = self.__nh
         N = self.__solver_params.N
         Tf = self.__horizon_params.Tf
 
@@ -262,12 +265,15 @@ class AutoGenU(object):
         tau = Tf / N
 
         # Define symbolic variables
-        x = sympy.symbols(f'x[0:{nx*N}]')
-        u = sympy.symbols(f'u[0:{self.__nu*N+self.__nc+self.__nh}]')
-        lmd = sympy.symbols(f'lmd[0:{self.__nx*(N)}]')
-        x0 = sympy.symbols(f'x0[0:{self.__nx}]')  # Initial state as variables
-        x_ref = sympy.symbols(f'x_ref[0:{nx}]')  # Reference state as variables
-        q = sympy.symbols(f'q[0:{nx}]')  # State cost matrix diagonal elements as variables
+        x = sympy.symbols('x[0:%d]' % (nx))  # State variables
+        x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
+        u = sympy.symbols('u[0:%d]' % (nu))  # Control inputs
+        u_matrix = sympy.Matrix([sympy.symbols(f'u{i}_{j}') for i in range(nu) for j in range(N)]).reshape(nu, N)
+        lm = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
+        lmd_matrix = sympy.Matrix([sympy.symbols(f'lmd{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
+        x0 = sympy.Matrix(sympy.symbols(f'x0:{self.__nx}'))  # Initial state as variables
+        x_ref = sympy.Matrix(sympy.symbols(f'x_ref:{nx}'))  # Reference state as variables
+        q = sympy.Matrix(sympy.symbols(f'q:{nx}'))  # State cost matrix diagonal elements as variables
 
         # Define symbolic functions
         f = self.__symbolic_functions.f
@@ -275,23 +281,66 @@ class AutoGenU(object):
         hx = self.__symbolic_functions.hx
 
         # Initialize the state equations with the initial conditions
-        state_equations = [xi - x0i for xi, x0i in zip(x[:nx], x0)]
+        state_equations = sympy.Matrix(x_matrix[:, 0] - x0)
 
         # Compute each state based on the previous states and the control input
-        for i in range(nx, nx * N):
-            prev_x = [x[i-nx+j] for j in range(nx)]
-            subs_u = [(u[0], u[i // nx])]
-            subs_x = [(x[j], prev_x[j]) for j in range(nx)]
-            
-            f_term = f[i % 4].subs(subs_u).subs(subs_x)
-            state_equation = x[i] - prev_x[(i - nx) % nx] - tau * f_term
-            
-            state_equations.append(state_equation)
-        # pdb.set_trace() 
+        for i in range(1, N): # time step
+            state_eq_column = sympy.Matrix() # Initialize as empty Matrix
+            for j in range(nx): # state dimension
+                # define previous state
+                prev_x = x_matrix[:, i-1]
+                prev_u = u_matrix[:, i-1]
+                # substitute the previous state and the control input
+                subs_x = [(x[k], prev_x[k]) for k in range(nx)]
+                subs_u = [(u[k], prev_u[k]) for k in range(nu)]
+                f_term = f[j].subs(subs_u).subs(subs_x)
+
+                # x(i) = x(i-1) + tau * f(x(i-1), u(i-1))
+                state_equation = x_matrix[j, i] - prev_x[j] - tau * f_term
+                # Convert state_equation to Matrix and append it to the row
+                state_eq_column = state_eq_column.col_join(sympy.Matrix([state_equation]))
+            # Append the row to the state equations Matrix
+            state_equations = state_equations.row_join(state_eq_column)
 
         # Calculate final state Lagrange multiplier
-        for i in range(nx):
-            lambda_N = [term.subs({x[i]: x[i+nx*(N-1)] for i in range(nx)}) for term in phix]
+        lambda_N = [term.subs({x[i]: x_matrix[i, N-1] for i in range(nx)}) for term in phix]
+        pdb.set_trace() 
+
+        # backward adjoint equation
+        adjoint_equation = [lmd_matrix[i, N - 1] - lambda_N[i] for i in range(nx)]
+
+        pdb.set_trace() 
+        # Compute each state based on the previous states and the control input
+        # for i in range(nx, nx * N):
+        #     prev_x = [x[i-nx+j] for j in range(nx)]
+        #     subs_u = [(u[0], u[i // nx])]
+        #     subs_x = [(x[j], prev_x[j]) for j in range(nx)]
+            
+        #     f_term = f[i % 4].subs(subs_u).subs(subs_x)
+        #     state_equation = x[i] - prev_x[(i - nx) % nx] - tau * f_term
+            
+        #     state_equations.append(state_equation)
+        # for i in range(1, N):
+        #     for j in range(nx):
+        #         prev_x = x[:, i-1]
+        #         subs_u = [(u[0], u[i])]
+        #         subs_x = [(x[k, i-1], prev_x[k]) for k in range(nx)]
+                
+        #         f_term = f[j].subs(subs_u).subs(subs_x)
+        #         state_equation = x[j, i] - prev_x[j] - tau * f_term
+                
+        #         state_equations.append(state_equation)
+        # # pdb.set_trace() 
+        # # Calculate final state Lagrange multiplier
+        # lambda_N = [term.subs({x[i, N-1]: x[i, N-1] for i in range(nx)}) for term in phix]
+        # # backward adjoint equation
+        # lmd_matrix = sympy.Matrix(sympy.symbols(f'lmd:{nx*N}')).reshape(nx, N,order='F')
+        # adjoint_equation = [lmd_matrix[i, N - 1] - lambda_N[i] for i in range(nx)]
+        pdb.set_trace() 
+
+        # Calculate final state Lagrange multiplier
+        # for i in range(nx):
+            # lambda_N = [term.subs({x[i]: x[i+nx*(N-1)] for i in range(nx)}) for term in phix]
         
         # pdb.set_trace() 
 
@@ -299,19 +348,19 @@ class AutoGenU(object):
         # for i in range(nx*(N-1)-1, -1, -nx):
         #     lmd[i:i+nx] = [lmd[i+nx+j] + tau * dH_dx(i+j, x, u, lmd) for j in range(nx)]
 
-        adjoint_equation = [lmd[nx * (N - 1) + i] - lambda_N[i] for i in range(nx)]
+        # adjoint_equation = [lmd[nx * (N - 1) + i] - lambda_N[i] for i in range(nx)]
         # pdb.set_trace() 
         # Check if hx is a list
-        if isinstance(hx, list):
-            print("hx is a list.")
-        else:
-            print("hx is not a list.")
+        # if isinstance(hx, list):
+        #     print("hx is a list.")
+        # else:
+        #     print("hx is not a list.")
 
         # Check if all items in hx are sympy expressions
-        if all(isinstance(item, sympy.Expr) for item in hx):
-            print("All items in hx are sympy expressions.")
-        else:
-            print("Not all items in hx are sympy expressions.")
+        # if all(isinstance(item, sympy.Expr) for item in hx):
+        #     print("All items in hx are sympy expressions.")
+        # else:
+        #     print("Not all items in hx are sympy expressions.")
         for i in range(nx * (N - 2), nx, -nx):
             print(i)
             # pdb.set_trace() 
