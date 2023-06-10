@@ -39,7 +39,7 @@ class ControlInputBound:
         self.umax = umax
         self.dummy_weight = dummy_weight
 
-SymbolicFunctions = namedtuple('SymbolicFunctions', ['f', 'phix', 'hx', 'hu'])
+SymbolicFunctions = namedtuple('SymbolicFunctions', ['f', 'phix', 'hamiltonian', 'hx', 'hu'])
 
 class NLPType(Enum):
     SingleShooting = auto()
@@ -231,7 +231,7 @@ class AutoGenU(object):
         for i in range(self.__nh):
             hu[nuc+i] = sympy.sqrt(u[nuc+i]**2 + h[i]**2 + fb_eps[i]) - (u[nuc+i] - h[i])
         phix = symutils.diff_scalar_func(phi, x)
-        self.__symbolic_functions = SymbolicFunctions(f, phix, hx, hu)  
+        self.__symbolic_functions = SymbolicFunctions(f, phix, hamiltonian, hx, hu)  
     
     def formulate_state_equations(self):
         # Parameters 
@@ -404,7 +404,50 @@ class AutoGenU(object):
             lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_lmd)
             
         # Store the resulting adjoint state time series for later use
-        self.lmd_time_series = lmd_time_series
+        self.__lmd_time_series = lmd_time_series
+        return
+    
+    def define_F(self):
+        """
+        This function defines the function F, which is a symbolic representation of the first-order condition 
+        from the optimal control problem. This is the condition that the derivative of the Hamiltonian 
+        with respect to the control variables (u) should be zero for an optimal control.
+
+        For each time point in the control horizon, F is calculated by substituting the state and adjoint 
+        state values into the Hamiltonian function's derivative and then storing the result. The resulting 
+        matrix F is reshaped to be a 2D matrix, with N rows (one for each time point) and nu columns 
+        (one for each control variable).
+        """
+        # Parameters 
+        nx = self.__nx  # number of states
+        nu = self.__nu  # number of inputs
+        nc = self.__nc  # number of constraints (not used in this function)
+        nh = self.__nh  # number of history points (not used in this function)
+        N = self.__solver_params.N  # length of the time horizon
+
+        # Define symbolic variables
+        x = sympy.symbols('x[0:%d]' % (nx))  # State variables
+        lmd = sympy.symbols('lmd[0:%d]' % (nx))  # Lagrange multipliers
+
+        # Initialize F as a symbolic matrix
+        F = sympy.Matrix([sympy.symbols(f'f{i}_{j}') for i in range(N) for j in range(nu)] ).reshape(N,nu)
+
+        # Define symbolic functions
+        # Convert the list to a SymPy matrix
+        hu = sympy.Matrix(self.__symbolic_functions.hu)
+
+        state_time_series = self.__state_time_series
+        lmd_time_series = self.__lmd_time_series
+
+        # Substitute the state and adjoint state values into the Hamiltonian's derivative for each time point
+        for i in range(N):
+            subs_x = [(x[j],state_time_series[j,i]) for j in range(nx)]
+            subs_lmd = [(lmd[j],lmd_time_series[j,i]) for j in range(nx)]
+            hu_term = hu.subs(subs_x).subs(subs_lmd)
+            F[i,:] = hu_term
+        
+        self.__F = F
+
         return
 
 
@@ -430,6 +473,7 @@ class AutoGenU(object):
         self.formulate_adjoint_equations()
         self.substitute_state_equations()
         self.substitute_adjoint_equations()
+        self.define_F()
         pdb.set_trace() 
 
     def add_control_input_bounds(
