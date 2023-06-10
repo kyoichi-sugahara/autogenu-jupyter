@@ -281,24 +281,36 @@ class AutoGenU(object):
         return
 
     def substitute_state_equations(self):
-
+        """
+        This function substitutes the system's state equations to create a time series of states. 
+        A matrix of state variables `x` over a time `N` is created, and the state equations are 
+        substituted column by column. The resulting state time series is stored for later use.
+        """
         # Parameters 
-        nx = self.__nx
-        nu = self.__nu
-        nc = self.__nc
-        nh = self.__nh
-        N = self.__solver_params.N
+        nx = self.__nx  # number of states
+        nu = self.__nu  # number of inputs (not used in this function)
+        nc = self.__nc  # number of constraints (not used in this function)
+        nh = self.__nh  # number of history points (not used in this function)
+        N = self.__solver_params.N  # length of the time horizon
 
         # Define symbolic variables
+        # Create a symbolic matrix for the state variables over time
         x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
+        
+        # Define the state equations
         state_equations = self.__state_equations
 
+        # Subtract the state equations from the state variables to create initial state time series
         state_time_series = state_equations*(-1)+x_matrix
 
-        for i in range(state_time_series.shape[1]-1):  # iterate over columns
+        # Substitute the state equations for each time point
+        for i in range(N-1):  # iterate over columns
+            # Prepare a list of substitutions for the state variables at time `i`
             subs_x = [(x_matrix[j,i],state_time_series[j,i]) for j in range(nx)]
+            # Perform the substitutions for the state variables at time `i+1`
             state_time_series[:, i+1] = state_time_series[:, i+1].subs(subs_x)
             
+        # Store the resulting state time series for later use
         self.__state_time_series = state_time_series
         return
 
@@ -319,7 +331,7 @@ class AutoGenU(object):
         x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
         u = sympy.symbols('u[0:%d]' % (nu))  # Control inputs
         u_matrix = sympy.Matrix([sympy.symbols(f'u{i}_{j}') for i in range(nu) for j in range(N)]).reshape(nu, N)
-        lmd = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
+        lmd = sympy.symbols('lmd[0:%d]' % (nx))  # Lagrange multipliers
         lmd_matrix = sympy.Matrix([sympy.symbols(f'lmd{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
 
         # Define symbolic functions
@@ -346,43 +358,55 @@ class AutoGenU(object):
                 subs_next_lmd = [(lmd[k], next_lmd[k]) for k in range(nx)]
                 # ∂h/∂x{i}
                 hx_term = hx[j].subs(subs_u).subs(subs_x).subs(subs_next_lmd)
-                # λ(i) = λ(i+1) + tau * ∂h/∂x{i}
+                # λ(i) = λ(i+1) + tau * ∂h/∂x{i} ⇔ 0 = λ(i) - λ(i+1) - tau * ∂h/∂x{i}
                 adjoint_equation = lmd_matrix[j, i] - next_lmd[j] - tau * hx_term
                 # Convert adjoint_equation to Matrix and append it to the column
                 adjoint_eq_column = adjoint_eq_column.col_join(sympy.Matrix([adjoint_equation]))
             # Prepend the column to the adjoint equations Matrix
             adjoint_equations = adjoint_eq_column.row_join(adjoint_equations) if adjoint_equations else adjoint_eq_column
-        
         self.__adjoint_equations = adjoint_equations
 
         return 
     
     def substitute_adjoint_equations(self):
-
+        """
+        This function substitutes the system's adjoint equations to create a time series of adjoint states. 
+        A matrix of adjoint state variables `lmd` over a time `N` is created, and the adjoint equations are 
+        substituted column by column in reverse time order. The resulting adjoint state time series is stored 
+        for later use.
+        """
         # Parameters 
-        nx = self.__nx
-        nu = self.__nu
-        nc = self.__nc
-        nh = self.__nh
-        N = self.__solver_params.N
+        nx = self.__nx  # number of states
+        nu = self.__nu  # number of inputs (not used in this function)
+        nc = self.__nc  # number of constraints (not used in this function)
+        nh = self.__nh  # number of history points (not used in this function)
+        N = self.__solver_params.N  # length of the time horizon
 
         # Define symbolic variables
-
+        # Create a symbolic matrix for the state variables over time
         x_matrix = sympy.Matrix([sympy.symbols(f'x{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
-        lmd = sympy.symbols('lm[0:%d]' % (nx))  # Lagrange multipliers
+        # Create a symbolic matrix for the adjoint state variables over time
         lmd_matrix = sympy.Matrix([sympy.symbols(f'lmd{i}_{j}') for i in range(nx) for j in range(N)]).reshape(nx, N)
 
+        state_time_series = self.__state_time_series
         adjoint_equations = self.__adjoint_equations
 
-        pdb.set_trace()
-        state_time_series = state_equations*(-1)+x_matrix
+        # Subtract the adjoint equations from the adjoint state variables to create initial adjoint state time series
+        lmd_time_series = adjoint_equations*(-1)+lmd_matrix
 
-        for i in range(state_time_series.shape[1]-1):  # iterate over columns
+        # Substitute the adjoint equations for each time point in reverse time order
+        for i in range(N-1, 0, -1):  # iterate over columns
+            # Prepare a list of substitutions for the state variables at time `i`
             subs_x = [(x_matrix[j,i],state_time_series[j,i]) for j in range(nx)]
-            state_time_series[:, i+1] = state_time_series[:, i+1].subs(subs_x)
+            # Prepare a list of substitutions for the adjoint state variables at time `i`
+            subs_lmd = [(lmd_matrix[j,i],lmd_time_series[j,i]) for j in range(nx)]
+            # Perform the substitutions for the state and adjoint state variables at time `i`
+            lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_lmd)
             
-        self.__state_time_series = state_time_series
+        # Store the resulting adjoint state time series for later use
+        self.lmd_time_series = lmd_time_series
         return
+
 
 
     def derive_jacobian_matrix(self, flag: bool):
