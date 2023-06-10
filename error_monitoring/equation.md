@@ -250,16 +250,6 @@ $$
 
 このとき、$x(0)$が与えられ、$N=k$とすると、$x_{i}^*(t)$と$\lambda_{i}^*(t)$は以下のように求めることができる。
 
-離散時間2点境界値問題の最適性条件は以下のようになります。
-$$
-F(U(t),x(t),t)=\begin{bmatrix}
-\frac{\partial H(x_0^*, u_0^*, \lambda_1^*, 0)}{\partial u_0} & \\
-\frac{\partial H(x_1^*, u_1^*, \lambda_2^*, 1)}{\partial u_1} & \\
-\vdots & \\
-\frac{\partial H(x_{N-1}^*, u_{N-1}^*, \lambda_N^*, N-1)}{\partial u_{N-1}} &
-\end{bmatrix}=0
-$$
-
 1. 初期状態$x_{0}^*(t)$は既知で、$x_{0}^*(t) = x(0)$である。
 2. 状態方程式に基づき、$i = 0, 1, ..., N-1$について以下を繰り返す
     $$
@@ -272,44 +262,12 @@ $$
     $$\lambda_{i}^*(t) = \lambda_{i+1}^*(t) + \Delta \tau \frac{\partial H(i)}{\partial x_i^*(t)}$$
     このステップで、全ての$\lambda_{i}^*(t)$が求まる。
 
-このとき、$x(0)$が与えられ、最適性条件$F(U(t),x(t),t)$に関するベクトル$U$のヤコビ行列の導出方法を示せ。
-
-
+ここで、$$
+F(U(t),x(t),t)
 $$
-second_part_i = lmd_i - lmd_{i + nx} - \tau \frac{\partial h_x}{\partial x_i}({x_j: x_{i-j}}{j=1}^{nx}, u_0: u{\frac{i-nx}{nx}}), \quad i \in {nx, nx+1, ..., nx(N-1)-1}
-$$
-
-このコードで解いている処理を数式で表現すると、以下のようになります。
-
-$$
-second\_part_i = \lambda_i - \lambda_{i + nx} - \tau \cdot \frac{\partial H(x_i)}{\partial x_i} \Big|_{x_j = x_{i-j}, u_0 = u_{\frac{i-nx}{nx}}}
-$$
-
-ここで、`second_part` の各要素は $second\_part_i$ で表され、$i$ は逆順に $nx$ から $nx(N - 1) - 1$ まで変化します。また、$\lambda$ は `lmd` リストの要素で、$H(x_i)$ は `hx_replaced` から計算された関数
-
-
-すみません、説明が不正確でした。ご指摘の通り、`sympy.Matrix(hx_replaced).diff(x[i])[0, 0]` は $H(x_i)$ を $x_i$ で微分したものではなく、$hx$ の各要素に対して $x_{ref}$ と $q$ の値を置き換えた後の $\frac{\partial H(i)}{\partial x_i^*(t)}$ を $x_i$ で微分したものです。
-
-したがって、数式は以下のように修正されます。
-
-$$
-second\_part_i = \lambda_i - \lambda_{i + nx} - \tau \cdot \frac{\partial^2 H(i)}{\partial x_i^*(t) \partial x_i} \Big|_{x_j = x_{i-j}, u_0 = u_{\frac{i-nx}{nx}}}
-$$
-
-ここで、`second_part` の各要素は $second\_part_i$ で表され、$i$ は逆順に $nx$ から $nx(N - 1) - 1$ まで変化します。また、$\lambda$ は `lmd` リストの要素で、$\frac{\partial^2 H(i)}{\partial x_i^*(t) \partial x_i}$ は `hx_replaced` から計算された関数です。
-
-この式では、次の置換が行われています：
-
-1. $x_j$ を $x_{i-j}$ に置換（$j = 1, 2, ..., nx-1$）
-2. $u_0$ を $u_{\frac{i-nx}{nx}}$ に置換
-
-以上の数式表現によって、コードで解いている処理が示されています。
-
-$$
-second_part_i = \lambda_{i + 1}^*(t) - \lambda_{i}^*(t) - \Delta \tau \cdot \frac{\partial H(i)}{\partial x_i^*(t)} \Big|{x_j = x{i-j}, u_0 = u_{\frac{i-nx}{nx}}}
-$$
-
-例えば、「$\frac{\partial H(i)}{\partial x_i^*(t)} \Big|_{x_j = x_j^*}$」は、「$x_j$が$x_j^*$であるときの$\frac{\partial H(i)}{\partial x_i^*(t)}$の値」という意味になります。
+の各要素を導出するためには
+$$\frac{\partial H(x_i^*, u_i^*, \lambda_1^*, 0)}{\partial u_i}$$
+を導出する必要がある。
 
 
 
