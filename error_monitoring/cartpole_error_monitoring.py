@@ -29,7 +29,7 @@ def main():
         "Tf": 2.0,  # Time horizon for the optimal control problem
         "alpha": 0.0,  # Soft horizon parameter
         "sampling_time": 0.001,  # Sampling time for the discrete-time optimal control problem
-        "N": 50,  # Number of discretized intervals
+        "N": 10,  # Number of discretized intervals
         "finite_difference_epsilon": 1.0e-08,  # Epsilon for finite difference approximations
         "zeta": 1000,  # Penalty parameter
         "kmax": 5,  # Maximum number of iterations for the semi-smooth Newton method
@@ -145,9 +145,11 @@ def set_parameters(auto_gen_u, config):
     #     uindex=0, umin=-15.0, umax=15.0, dummy_weight=0.1
     # )
     auto_gen_u.set_scalar_vars(["m_c", 2], ["m_p", 0.2], ["l", 0.5], ["g", 9.80665])
-    auto_gen_u.set_array_var("q", [2.5, 10, 0.01, 0.01])
+    # auto_gen_u.set_array_var("q", [2.5, 10, 0.01, 0.01])
+    auto_gen_u.set_array_var("q", [0.01, 0.01, 10.0, 0.01])
     auto_gen_u.set_array_var("r", [1])
-    auto_gen_u.set_array_var("q_terminal", [2.5, 10, 0.01, 0.01])
+    # auto_gen_u.set_array_var("q_terminal", [2.5, 10, 0.01, 0.01])
+    auto_gen_u.set_array_var("q_terminal", [0.01, 0.01, 10.0, 0.01])
     # auto_gen_u.set_array_var("x_ref", [0, "M_PI", 0, 0])
     auto_gen_u.set_array_var("x_ref", [0, 0, 1, 0])
 
