@@ -67,7 +67,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=YOUR_INSTALL_DESTINATION
 make install 
 ```
 at the project root directory of `autogenu-jupyter`.  
-Then you can build the NMPC code with the generated `ocp.hpp` file and without `.ipynb` notebook files.   
+Then you can build the NMPC code with the generated `ocp.hpp` file and without `.ipynb` notebook files.
 The examples are found in `examples/cpp` directory.  
 
 

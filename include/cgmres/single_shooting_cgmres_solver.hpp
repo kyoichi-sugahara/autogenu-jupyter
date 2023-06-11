@@ -429,7 +429,6 @@ public:
     const auto diff = solution_update_ - initial_guess;
     diff_norm_ = diff.norm();
     relative_standard_deviation_ = relativeStandardDeviation(solution_update_);
-    // std::cout << "norm_diff = " << diff_norm << std::endl;
   }
 
   ///
