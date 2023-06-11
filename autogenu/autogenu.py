@@ -353,14 +353,16 @@ class AutoGenU(object):
                 # define current state and current control
                 current_x = x_matrix[:, i]
                 current_u = u_matrix[:, i]
+                current_lmd = lmd_matrix[:, i]
                 next_lmd = lmd_matrix[:, i+1]
                 # substitute the next state and the current control/state
                 subs_x = [(x[k], current_x[k]) for k in range(nx)]
                 subs_u = [(u[k], current_u[k]) for k in range(nu)]
+                subs_lmd = [(lmd[k], current_lmd[k]) for k in range(nx)]
                 subs_next_lmd = [(lmd[k], next_lmd[k]) for k in range(nx)]
                 # ∂h/∂x{i}
                 hx_term = hx[j].subs(subs_u).subs(subs_x).subs(subs_next_lmd)
-                # λ(i) = λ(i+1) + tau * ∂h/∂x{i} ⇔ 0 = λ(i) - λ(i+1) - tau * ∂h/∂x{i}
+                # λ(i) = λ(i+1) + tau * ∂h/∂x(x{i},u{i},λ{i+1}) ⇔ 0 = λ(i) - λ(i+1) - tau * ∂h/∂x(x{i},u{i},λ{i+1})
                 adjoint_equation = lmd_matrix[j, i] - next_lmd[j] - tau * hx_term
                 # Convert adjoint_equation to Matrix and append it to the column
                 adjoint_eq_column = adjoint_eq_column.col_join(sympy.Matrix([adjoint_equation]))
