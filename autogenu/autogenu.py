@@ -347,14 +347,14 @@ class AutoGenU(object):
         adjoint_equations = sympy.Matrix(lmd_matrix[:, N-1] - lambda_N)
 
         # Compute each Lagrange multiplier based on the next multipliers and the state/control input
-        for i in range(N-2, -1, -1): # time step
+        for i in range(N-1, -0, -1): # time step
             adjoint_eq_column = sympy.Matrix() # Initialize as empty Matrix
             for j in range(nx): # state dimension
                 # define current state and current control
                 current_x = x_matrix[:, i]
                 current_u = u_matrix[:, i]
-                current_lmd = lmd_matrix[:, i]
-                next_lmd = lmd_matrix[:, i+1]
+                current_lmd = lmd_matrix[:, i-1]
+                next_lmd = lmd_matrix[:, i]
                 # substitute the next state and the current control/state
                 subs_x = [(x[k], current_x[k]) for k in range(nx)]
                 subs_u = [(u[k], current_u[k]) for k in range(nu)]
@@ -363,7 +363,7 @@ class AutoGenU(object):
                 # ∂h/∂x{i}
                 hx_term = hx[j].subs(subs_u).subs(subs_x).subs(subs_next_lmd)
                 # λ(i) = λ(i+1) + tau * ∂h/∂x(x{i},u{i},λ{i+1}) ⇔ 0 = λ(i) - λ(i+1) - tau * ∂h/∂x(x{i},u{i},λ{i+1})
-                adjoint_equation = lmd_matrix[j, i] - next_lmd[j] - tau * hx_term
+                adjoint_equation = current_lmd[j] - next_lmd[j] - tau * hx_term
                 # Convert adjoint_equation to Matrix and append it to the column
                 adjoint_eq_column = adjoint_eq_column.col_join(sympy.Matrix([adjoint_equation]))
             # Prepend the column to the adjoint equations Matrix
@@ -399,13 +399,17 @@ class AutoGenU(object):
         lmd_time_series = adjoint_equations*(-1)+lmd_matrix
 
         # Substitute the adjoint equations for each time point in reverse time order
-        for i in range(N-1, 0, -1):  # iterate over columns
+        for i in range(N-1, -1, -1):  # iterate over columns
             # Prepare a list of substitutions for the state variables at time `i`
             subs_x = [(x_matrix[j,i],state_time_series[j,i]) for j in range(nx)]
             # Prepare a list of substitutions for the adjoint state variables at time `i`
-            subs_lmd = [(lmd_matrix[j,i],lmd_time_series[j,i]) for j in range(nx)]
+            subs_current_lmd = [(lmd_matrix[j,i],lmd_time_series[j,i]) for j in range(nx)]
+            if i == N-1:
+                lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_current_lmd)
+            else:
+                subs_next_lmd = [(lmd_matrix[j,i+1],lmd_time_series[j,i+1]) for j in range(nx)]
+                lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_current_lmd).subs(subs_next_lmd)
             # Perform the substitutions for the state and adjoint state variables at time `i`
-            lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_lmd)
             
         # Store the resulting adjoint state time series for later use
         self.__lmd_time_series = lmd_time_series
