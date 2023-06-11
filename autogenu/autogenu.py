@@ -401,16 +401,16 @@ class AutoGenU(object):
         # Substitute the adjoint equations for each time point in reverse time order
         for i in range(N-1, -1, -1):  # iterate over columns
             # Prepare a list of substitutions for the state variables at time `i`
-            subs_x = [(x_matrix[j,i],state_time_series[j,i]) for j in range(nx)]
+            
             # Prepare a list of substitutions for the adjoint state variables at time `i`
             subs_current_lmd = [(lmd_matrix[j,i],lmd_time_series[j,i]) for j in range(nx)]
             if i == N-1:
-                lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_current_lmd)
+                subs_x = [(x_matrix[j,i],state_time_series[j,i]) for j in range(nx)]
+                lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_current_lmd).subs(subs_x)
             else:
+                subs_x = [(x_matrix[j,k],state_time_series[j,k]) for j in range(nx) for k in range(i,N)]
                 subs_next_lmd = [(lmd_matrix[j,i+1],lmd_time_series[j,i+1]) for j in range(nx)]
-                lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_x).subs(subs_current_lmd).subs(subs_next_lmd)
-            # Perform the substitutions for the state and adjoint state variables at time `i`
-            
+                lmd_time_series[:, i] = lmd_time_series[:, i].subs(subs_next_lmd).subs(subs_current_lmd).subs(subs_x)
         # Store the resulting adjoint state time series for later use
         self.__lmd_time_series = lmd_time_series
         return
@@ -459,15 +459,15 @@ class AutoGenU(object):
         return
     
     def save_to_file(self, filename):
-        with open(filename, 'wb') as f:
+        file_path = os.path.join(self.get_ocp_dir(),'log', filename)
+
+        with open(file_path, 'wb') as f:
             data = {
                 'F': self.__F,
                 'lmd_time_series': self.__lmd_time_series,
                 'state_time_series': self.__state_time_series
             }
             pickle.dump(data, f)
-
-
 
     def derive_symbolic_F(self, flag: bool):
         """
@@ -1142,7 +1142,7 @@ int main() {
     const cgmres::VectorX x1 = cgmres::RK4(ocp, t, sampling_time, x, u); // the next state
     mpc.update(t, x); // update the MPC solution
 
-    logger.save(t, x, u, mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
+    logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
     x = x1;
     t = t + sampling_time;
   }

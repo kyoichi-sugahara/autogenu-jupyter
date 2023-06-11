@@ -51,11 +51,12 @@ public:
   ///
   template <typename StateVectorType, typename ControlInputVectorType>
   void save(const Scalar t, const MatrixBase<StateVectorType>& x, 
-            const MatrixBase<ControlInputVectorType >& u,
+            const MatrixBase<ControlInputVectorType >& u,const MatrixBase<ControlInputVectorType >& uopt,
             const double opterr, const double norm_diff, const double relative_standard_deviation) {
     t_log_ << t << '\n';
     x_log_ << x.transpose() << '\n';
     u_log_ << u.transpose() << '\n';
+    uopt_log_ << uopt.transpose() << '\n';
     opterr_log_ << opterr << '\n';
     diff_norm_log_ << norm_diff << '\n';
     relative_standard_deviation_log_ << relative_standard_deviation << '\n';
@@ -73,7 +74,7 @@ public:
 
 private:
   std::string log_name_;
-  std::ofstream t_log_, x_log_, u_log_, opterr_log_, diff_norm_log_, relative_standard_deviation_log_;
+  std::ofstream t_log_, x_log_, u_log_,uopt_log_, opterr_log_, diff_norm_log_, relative_standard_deviation_log_;
 };
 
 } // namespace cgmres
