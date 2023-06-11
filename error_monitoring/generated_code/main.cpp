@@ -42,7 +42,7 @@ int main() {
   initializer.solve(t0, x0);
 
   // Define the C/GMRES solver.
-  constexpr int N = 100;
+  constexpr int N = 50;
   constexpr int kmax = 5;
   cgmres::SingleShootingCGMRESSolver<cgmres::OCP_generated_code, N, kmax> mpc(ocp, horizon, settings);
   mpc.set_uc(initializer.ucopt());

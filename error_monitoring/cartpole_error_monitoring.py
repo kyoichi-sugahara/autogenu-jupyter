@@ -29,7 +29,7 @@ def main():
         "Tf": 2.0,  # Time horizon for the optimal control problem
         "alpha": 0.0,  # Soft horizon parameter
         "sampling_time": 0.001,  # Sampling time for the discrete-time optimal control problem
-        "N": 5,  # Number of discretized intervals
+        "N": 50,  # Number of discretized intervals
         "finite_difference_epsilon": 1.0e-08,  # Epsilon for finite difference approximations
         "zeta": 1000,  # Penalty parameter
         "kmax": 5,  # Maximum number of iterations for the semi-smooth Newton method
@@ -45,6 +45,10 @@ def main():
 
     # Create and configure the AutoGenU object
     auto_gen_u = create_autogenu_object(config)
+    
+    # Set the directory for generating optimal control problem code. 
+    # This is where all the generated files for the problem will be stored.
+    auto_gen_u.set_ocp_dir("error_monitoring")
 
     # Set horizon, solver, initialization, and simulation parameters
     set_parameters(auto_gen_u, config)
@@ -56,7 +60,7 @@ def main():
     set_nlp_type(auto_gen_u)
 
     # Derive Jacobian matrix,
-    derive_jacobian_matrix(auto_gen_u)
+    # derive_jacobian_matrix(auto_gen_u)
 
     # Set OCP directory, generate main function and CMakeLists, and build and run the simulation
     build_and_run_simulation(auto_gen_u)
@@ -144,7 +148,8 @@ def set_parameters(auto_gen_u, config):
     auto_gen_u.set_array_var("q", [2.5, 10, 0.01, 0.01])
     auto_gen_u.set_array_var("r", [1])
     auto_gen_u.set_array_var("q_terminal", [2.5, 10, 0.01, 0.01])
-    auto_gen_u.set_array_var("x_ref", [0, "M_PI", 0, 0])
+    # auto_gen_u.set_array_var("x_ref", [0, "M_PI", 0, 0])
+    auto_gen_u.set_array_var("x_ref", [0, 0, 1, 0])
 
     auto_gen_u.set_horizon_params(config["Tf"], config["alpha"])
     auto_gen_u.set_solver_params(

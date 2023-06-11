@@ -19,7 +19,7 @@ namespace python {
 
 namespace py = pybind11;
 
-constexpr int N = 100;
+constexpr int N = 50;
 constexpr int kmax = 5;
 DEFINE_PYBIND11_MODULE_SINGLE_SHOOTING_CGMRES_SOLVER(OCP_generated_code, N, kmax)
 

@@ -474,7 +474,6 @@ class AutoGenU(object):
         self.substitute_state_equations()
         self.substitute_adjoint_equations()
         self.define_F()
-        pdb.set_trace() 
 
     def add_control_input_bounds(
         self, uindex: int, umin, umax, dummy_weight
@@ -1739,15 +1738,21 @@ install(
                 stderr = subprocess.PIPE, 
                 shell=True
             )
-            os.makedirs(self.get_ocp_log_dir(), exist_ok=True)
-            proc = subprocess.Popen(
-                ['./'+self.__ocp_name], 
-                cwd=self.get_ocp_build_dir(), 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.STDOUT
-            )
-            for line in iter(proc.stdout.readline, b''):
-                print(line.rstrip().decode("utf8"))
+        # Create a directory with the specified path if it doesn't already exist
+        os.makedirs(self.get_ocp_log_dir(), exist_ok=True)
+
+        # Start a new process and execute an external program with the specified arguments
+        proc = subprocess.Popen(
+            ['./'+self.__ocp_name],  # Name of the external program to be executed
+            cwd=self.get_ocp_build_dir(),  # Current working directory for the external program
+            stdout=subprocess.PIPE,  # Redirect standard output to a pipe
+            stderr=subprocess.STDOUT  # Merge standard error with standard output
+        )
+
+        # Read the output from the external program line by line and print it to the console
+        for line in iter(proc.stdout.readline, b''):
+            print(line.rstrip().decode("utf8"))
+
         print('The log files are generated at ', self.get_ocp_log_dir())
 
 def generate_docs():
