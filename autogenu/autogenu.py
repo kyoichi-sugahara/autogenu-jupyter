@@ -5,6 +5,8 @@ from collections import namedtuple
 import sympy
 import os
 import sys
+import time
+import pickle
 
 import pdb
 
@@ -449,10 +451,19 @@ class AutoGenU(object):
         self.__F = F
 
         return
+    
+    def save_to_file(self, filename):
+        with open(filename, 'wb') as f:
+            data = {
+                'F': self.__F,
+                'lmd_time_series': self.__lmd_time_series,
+                'state_time_series': self.__state_time_series
+            }
+            pickle.dump(data, f)
 
 
 
-    def derive_jacobian_matrix(self, flag: bool):
+    def derive_symbolic_F(self, flag: bool):
         """
         Derive the Jacobian matrix if the flag is set to True.
 
@@ -469,11 +480,37 @@ class AutoGenU(object):
         if not flag:
             return
 
+
+        start_time = time.time()
         self.formulate_state_equations()
+        end_time = time.time()
+        print(f"formulate_state_equations() took {end_time - start_time} seconds to execute.")
+
+        start_time = time.time()
         self.formulate_adjoint_equations()
+        end_time = time.time()
+        print(f"formulate_adjoint_equations() took {end_time - start_time} seconds to execute.")
+
+        start_time = time.time()
         self.substitute_state_equations()
+        end_time = time.time()
+        print(f"substitute_state_equations() took {end_time - start_time} seconds to execute.")
+
+        start_time = time.time()
         self.substitute_adjoint_equations()
+        end_time = time.time()
+        print(f"substitute_adjoint_equations() took {end_time - start_time} seconds to execute.")
+
+        start_time = time.time()
         self.define_F()
+        end_time = time.time()
+        print(f"define_F() took {end_time - start_time} seconds to execute.")
+
+        start_time = time.time()
+        self.save_to_file("symbolic_F.pkl")
+        end_time = time.time()
+        print(f"save_to_file() took {end_time - start_time} seconds to execute.")
+
 
     def add_control_input_bounds(
         self, uindex: int, umin, umax, dummy_weight

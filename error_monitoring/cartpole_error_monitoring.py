@@ -60,7 +60,7 @@ def main():
     set_nlp_type(auto_gen_u)
 
     # Derive Jacobian matrix,
-    # derive_jacobian_matrix(auto_gen_u)
+    derive_symbolic_F(auto_gen_u)
 
     # Set OCP directory, generate main function and CMakeLists, and build and run the simulation
     build_and_run_simulation(auto_gen_u)
@@ -124,9 +124,9 @@ def create_autogenu_object(config):
     return auto_gen_u
 
 
-def derive_jacobian_matrix(auto_gen_u):
-    derive_jacobian_matrix = True
-    auto_gen_u.derive_jacobian_matrix(derive_jacobian_matrix)
+def derive_symbolic_F(auto_gen_u):
+    derive_symbolic_F = True
+    auto_gen_u.derive_symbolic_F(derive_symbolic_F)
 
 
 def generate_ocp_definition(auto_gen_u):
