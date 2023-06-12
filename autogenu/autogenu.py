@@ -203,6 +203,27 @@ class AutoGenU(object):
                 assert array_var.size == len(values)
                 array_var.values = values
 
+    def make_subs_dicts(self):
+        subs_dict = {}
+
+        # Scalar variables
+        for scalar_var in self.__scalar_vars:
+            # Create a sympy.Symbol with the variable's name
+            sym = sympy.Symbol(scalar_var.name)
+            # Add the symbol and its corresponding value to the subs_dict
+            subs_dict[sym] = scalar_var.value
+
+        # Array variables
+        for array_var in self.__array_vars:
+            # Create a sympy.Matrix with the array variable's values
+            mat = sympy.Matrix(array_var.values)
+            # For each element in the matrix, add a mapping to subs_dict
+            for i in range(mat.shape[0]):
+                sym = sympy.Symbol(array_var.name + f'[%d]'%(i))
+                subs_dict[sym] = mat[i]
+
+        return subs_dict
+
     def set_functions(self, f, C, h, L, phi):
         """ Sets functions that defines the optimal control problem.
 
@@ -234,6 +255,7 @@ class AutoGenU(object):
             hu[nuc+i] = sympy.sqrt(u[nuc+i]**2 + h[i]**2 + fb_eps[i]) - (u[nuc+i] - h[i])
         phix = symutils.diff_scalar_func(phi, x)
         self.__symbolic_functions = SymbolicFunctions(f, phix, hamiltonian, hx, hu)  
+
     
     def formulate_state_equations(self):
         # Parameters 
@@ -278,6 +300,7 @@ class AutoGenU(object):
                 state_eq_column = state_eq_column.col_join(sympy.Matrix([state_equation]))
             # Append the row to the state equations Matrix
             state_equations = state_equations.row_join(state_eq_column)
+
 
         self.__state_equations = state_equations
         return
@@ -368,6 +391,7 @@ class AutoGenU(object):
                 adjoint_eq_column = adjoint_eq_column.col_join(sympy.Matrix([adjoint_equation]))
             # Prepend the column to the adjoint equations Matrix
             adjoint_equations = adjoint_eq_column.row_join(adjoint_equations) if adjoint_equations else adjoint_eq_column
+
         self.__adjoint_equations = adjoint_equations
 
         return 
@@ -434,8 +458,11 @@ class AutoGenU(object):
         N = self.__solver_params.N  # length of the time horizon
 
         # Define symbolic variables
+        u = sympy.symbols('u[0:%d]' % (nu))  # Control variables
         x = sympy.symbols('x[0:%d]' % (nx))  # State variables
         lmd = sympy.symbols('lmd[0:%d]' % (nx))  # Lagrange multipliers
+
+        u_matrix = sympy.Matrix([sympy.symbols(f'u{i}_{j}') for i in range(nu) for j in range(N)]).reshape(nu, N)
 
         # Initialize F as a symbolic matrix
         F = sympy.Matrix([sympy.symbols(f'f{i}_{j}') for i in range(N) for j in range(nu)] ).reshape(N,nu)
@@ -450,8 +477,9 @@ class AutoGenU(object):
         # Substitute the state and adjoint state values into the Hamiltonian's derivative for each time point
         for i in range(N):
             subs_x = [(x[j],state_time_series[j,i]) for j in range(nx)]
+            subs_u = [(u[j],u_matrix[j,i]) for j in range(nu)]
             subs_lmd = [(lmd[j],lmd_time_series[j,i]) for j in range(nx)]
-            hu_term = hu.subs(subs_x).subs(subs_lmd)
+            hu_term = hu.subs(subs_x).subs(subs_lmd).subs(subs_u)
             F[i,:] = hu_term
         
         self.__F = F

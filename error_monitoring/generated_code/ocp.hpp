@@ -56,8 +56,8 @@ public:
   double l = 0.5;
   double g = 9.80665;
 
-  std::array<double, 4> q = {2.5, 10, 0.01, 0.01};
-  std::array<double, 4> q_terminal = {2.5, 10, 0.01, 0.01};
+  std::array<double, 4> q = {0.01, 0.01, 10.0, 0.01};
+  std::array<double, 4> q_terminal = {0.01, 0.01, 10.0, 0.01};
   std::array<double, 4> x_ref = {0, 0, 1, 0};
   std::array<double, 1> r = {1};
 
