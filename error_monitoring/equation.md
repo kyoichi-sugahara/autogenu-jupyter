@@ -324,7 +324,7 @@ $$CV = \frac{\sigma}{\mu} = \frac{\sqrt{\frac{\sum_{i=1}^{N}(x_i-\mu)^2}{N}}}{\f
 
 #### 正規化手法
 
-$x_{normalized_i} = \frac{x_i - \min(x)}{\max(x) - \min(x)}$
+$$x_{normalized_i} = \frac{x_i - \min(x)}{\max(x) - \min(x)}$$
 
 ここで、$x_{normalized_i}$は正規化された解の$i$番目の成分、$x_i$は解の$i$番目の成分、$\min(x)$は解の成分の最小値、$\max(x)$は解の成分の最大値を表します。
 
