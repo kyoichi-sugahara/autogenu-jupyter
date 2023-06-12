@@ -164,7 +164,7 @@ class Plotter(object):
         self.__num_plot_x, 
         self.__dim_x+self.__dim_u+2
         )
-        plt.plot(self.__t_data, self.__diff_norm_data)
+        plt.plot(self.__t_data[5:], self.__diff_norm_data[5:])
         plt.xlabel(r'${\rm Time}$ $[s]$')
         plt.ylabel(r'$ | \Delta x | = \| \sqrt{\sum_{i=1}^{n}(\Delta x_i)^2} \|$')
         plt.xlim(self.__t_data[0], self.__t_data[-1])
@@ -174,7 +174,17 @@ class Plotter(object):
         self.__num_plot_x, 
         self.__dim_x+self.__dim_u+3
         )
-        plt.plot(self.__t_data, self.__relative_standard_deviation_data)
+        cut_off = 1000
+        x = []
+        y = []
+        for i in range(len(self.__t_data)):
+            if self.__relative_standard_deviation_data[i] < cut_off and self.__relative_standard_deviation_data[i] > -cut_off:
+                x.append(self.__t_data[i])
+                y.append(self.__relative_standard_deviation_data[i])
+
+        # グラフの描画
+        plt.plot(x, y)
+        # plt.plot(self.__t_data, self.__relative_standard_deviation_data)
         plt.xlabel(r'${\rm Time}$ $[s]$')
         plt.ylabel(r'$CV = \frac{\sigma}{\mu} = \frac{\sqrt{\frac{\sum_{i=1}^{N}(x_i-\mu)^2}{N}}}{\frac{\sum_{i=1}^{N}x_i}{N}} $')
         plt.xlim(self.__t_data[0], self.__t_data[-1])
