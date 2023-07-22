@@ -1,5 +1,5 @@
 {
-    "ocp_name": "generated_code",
+    "ocp_name": "cartpole_error_monitoring",
     "nx": 4,
     "nu": 1,
     "Tf": 2.0,

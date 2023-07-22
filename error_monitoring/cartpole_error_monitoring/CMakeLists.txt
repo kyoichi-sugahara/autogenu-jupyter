@@ -3,7 +3,7 @@
 # The autogenu-jupyter copyright holders make no ownership claim of its contents. 
 
 cmake_minimum_required(VERSION 3.1)
-project(generated_code CXX)
+project(cartpole_error_monitoring CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 

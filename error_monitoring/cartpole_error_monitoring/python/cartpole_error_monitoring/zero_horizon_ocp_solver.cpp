@@ -20,7 +20,7 @@ namespace python {
 namespace py = pybind11;
 
 constexpr int kmax_init = 1;
-DEFINE_PYBIND11_MODULE_ZERO_HORIZON_OCP_SOLVER(OCP_generated_code, kmax_init)
+DEFINE_PYBIND11_MODULE_ZERO_HORIZON_OCP_SOLVER(OCP_cartpole_error_monitoring, kmax_init)
 
 
 } // namespace python
