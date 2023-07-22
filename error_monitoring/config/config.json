@@ -1,0 +1,40 @@
+{
+    "ocp_name": "generated_code",
+    "nx": 4,
+    "nu": 1,
+    "Tf": 2.0,
+    "alpha": 0.0,
+    "sampling_time": 0.001,
+    "N": 100,
+    "finite_difference_epsilon": 1.0e-08,
+    "zeta": 1000,
+    "kmax": 5,
+    "solution_initial_guess": [0.01],
+    "tolerance": 1.0e-6,
+    "max_iterations": 50,
+    "initial_time": 0.0,
+    "initial_state": [0.0, 0.0, 0.0, 0.0],
+    "simulation_length": 10.0,
+    "scalar_vars": [
+        {"name": "m_c", "value": 2},
+        {"name": "m_p", "value": 0.2},
+        {"name": "l", "value": 0.5},
+        {"name": "g", "value": 9.80665}
+    ],
+    "array_vars": [
+        {"name": "q", "values": [2.5, 10, 0.01, 0.01]},
+        {"name": "r", "values": [1]},
+        {"name": "q_terminal", "values": [2.5, 10, 0.01, 0.01]},
+        {"name": "x_ref", "values": [0, "M_PI", 0, 0]}
+    ],
+    "set_ocp_dir": true,
+    "set_parameters": true,
+    "generate_ocp_definition": true,
+    "set_nlp_type": true,
+    "derive_symbolic_F": false,
+    "build_and_run_simulation": true,
+    "plot_results": true,
+    "generate_animation": true,
+    "generate_and_install_python_bindings": true,
+    "generate_documentation": true
+}

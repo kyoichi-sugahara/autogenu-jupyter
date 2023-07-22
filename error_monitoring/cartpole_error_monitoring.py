@@ -1,11 +1,13 @@
 import autogenu
 import subprocess
+import os
+import json
 import matplotlib.pyplot as plt
 from sympy import sin, cos, sqrt
 
 import sys
-
 import pdb
+
 # print(f"{sys._getframe().f_lineno} {__file__}")
     # try:
     #     # Autogenuコード
@@ -20,62 +22,54 @@ import pdb
 
 
 def main():
-    # subprocess.run(["python3", "-m", "pip", "install", "."], cwd="../autogenu-jupyter")
-    # Constants
-    config = {
-        "nx": 4,  # Number of states
-        "nu": 1,  # Number of control inputs
-        "ocp_name": "generated_code",  # Name of the optimal control problem
-        "Tf": 2.0,  # Time horizon for the optimal control problem
-        "alpha": 0.0,  # Soft horizon parameter
-        "sampling_time": 0.001,  # Sampling time for the discrete-time optimal control problem
-        "N": 10,  # Number of discretized intervals
-        "finite_difference_epsilon": 1.0e-08,  # Epsilon for finite difference approximations
-        "zeta": 1000,  # Penalty parameter
-        "kmax": 5,  # Maximum number of iterations for the semi-smooth Newton method
-        "initial_time": 0,  # Initial time for the simulation
-        "initial_state": [0, 0, 0, 0],  # Initial state for the simulation
-        "simulation_length": 10,  # Length of the simulation in seconds
-        "solution_initial_guess": [
-            0.01
-        ],  # Initial guess for the optimal control problem solution
-        "tolerance": 1.0e-06,  # Tolerance for the optimal control problem solution
-        "max_iterations": 50,  # Maximum number of iterations for the optimal control problem solution
-    }
+    script_location = os.path.abspath(__file__)
+    script_dir = os.path.dirname(script_location)
+    # Load the configuration from a JSON file
+    with open(script_dir+'/config/config_20230722.json', 'r') as f:
+        config = json.load(f)
 
     # Create and configure the AutoGenU object
     auto_gen_u = create_autogenu_object(config)
     
-    # Set the directory for generating optimal control problem code. 
-    # This is where all the generated files for the problem will be stored.
-    auto_gen_u.set_ocp_dir("error_monitoring")
+    if config.get('set_ocp_dir', True):
+        # Set the directory for generating optimal control problem code. 
+        auto_gen_u.set_ocp_dir("error_monitoring")
 
-    # Set horizon, solver, initialization, and simulation parameters
-    set_parameters(auto_gen_u, config)
+    if config.get('set_parameters', True):
+        # Set horizon, solver, initialization, and simulation parameters
+        set_parameters(auto_gen_u, config)
 
-    # Generate OCP definition
-    generate_ocp_definition(auto_gen_u)
+    if config.get('generate_ocp_definition', True):
+        # Generate OCP definition
+        generate_ocp_definition(auto_gen_u)
 
-    # Set NLP type
-    set_nlp_type(auto_gen_u)
+    if config.get('set_nlp_type', True):
+        # Set NLP type
+        set_nlp_type(auto_gen_u)
 
-    # Derive Jacobian matrix,
-    derive_symbolic_F(auto_gen_u)
+    if config.get('derive_symbolic_F', True):
+        # Derive Jacobian matrix
+        derive_symbolic_F(auto_gen_u)
 
-    # Set OCP directory, generate main function and CMakeLists, and build and run the simulation
-    build_and_run_simulation(auto_gen_u)
+    if config.get('build_and_run_simulation', True):
+        # Set OCP directory, generate main function and CMakeLists, and build and run the simulation
+        build_and_run_simulation(auto_gen_u)
 
-    # Plot results
-    plot_results(auto_gen_u)
+    if config.get('plot_results', True):
+        # Plot results
+        plot_results(auto_gen_u)
 
-    # Generate animation
-    generate_animation(auto_gen_u)
+    if config.get('generate_animation', True):
+        # Generate animation
+        generate_animation(auto_gen_u)
 
-    # Generate and install Python bindings
-    generate_and_install_python_bindings(auto_gen_u)
+    if config.get('generate_and_install_python_bindings', True):
+        # Generate and install Python bindings
+        generate_and_install_python_bindings(auto_gen_u)
 
-    # Generate and open documentation
-    generate_documentation()
+    if config.get('generate_documentation', True):
+        # Generate and open documentation
+        generate_documentation()
 
 
 def create_autogenu_object(config):
@@ -141,17 +135,11 @@ def set_nlp_type(auto_gen_u):
 
 
 def set_parameters(auto_gen_u, config):
-    # auto_gen_u.add_control_input_bounds(
-    #     uindex=0, umin=-15.0, umax=15.0, dummy_weight=0.1
-    # )
-    auto_gen_u.set_scalar_vars(["m_c", 2], ["m_p", 0.2], ["l", 0.5], ["g", 9.80665])
-    # auto_gen_u.set_array_var("q", [2.5, 10, 0.01, 0.01])
-    auto_gen_u.set_array_var("q", [0.01, 0.01, 10.0, 0.01])
-    auto_gen_u.set_array_var("r", [1])
-    # auto_gen_u.set_array_var("q_terminal", [2.5, 10, 0.01, 0.01])
-    auto_gen_u.set_array_var("q_terminal", [0.01, 0.01, 10.0, 0.01])
-    # auto_gen_u.set_array_var("x_ref", [0, "M_PI", 0, 0])
-    auto_gen_u.set_array_var("x_ref", [0, 0, 1, 0])
+    for var in config["scalar_vars"]:
+        auto_gen_u.set_scalar_vars([var["name"], var["value"]])
+
+    for var in config["array_vars"]:
+        auto_gen_u.set_array_var(var["name"], var["values"])
 
     auto_gen_u.set_horizon_params(config["Tf"], config["alpha"])
     auto_gen_u.set_solver_params(

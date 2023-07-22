@@ -29,9 +29,9 @@ int main() {
   settings.opterr_tol = 1e-06;
 
   // Define the initial time and initial state.
-  const double t0 = 0;
+  const double t0 = 0.0;
   cgmres::Vector<4> x0;
-  x0 << 0, 0, 0, 0;
+  x0 << 0.0, 0.0, 0.0, 0.0;
 
   // Initialize the solution of the C/GMRES method.
   constexpr int kmax_init = 1;
@@ -42,14 +42,14 @@ int main() {
   initializer.solve(t0, x0);
 
   // Define the C/GMRES solver.
-  constexpr int N = 50;
+  constexpr int N = 5;
   constexpr int kmax = 5;
   cgmres::SingleShootingCGMRESSolver<cgmres::OCP_generated_code, N, kmax> mpc(ocp, horizon, settings);
   mpc.set_uc(initializer.ucopt());
   mpc.init_dummy_mu();
 
   // Perform a numerical simulation.
-  const double tsim = 10; 
+  const double tsim = 10.0; 
   const double sampling_time = settings.sampling_time;
   const unsigned int sim_steps = std::floor(tsim / sampling_time);
 
