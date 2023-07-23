@@ -339,16 +339,16 @@ public:
   /// @return The l2-norm of the current optimality errors.
   ///
   Scalar optError() const {
-    std::cerr << "continuation_gmres_.optError() = "
-              << continuation_gmres_.optError() << "\n\n\n"
-              << std::endl;
+    // std::cerr << "continuation_gmres_.optError() = "
+    //           << continuation_gmres_.optError() << "\n\n\n"
+    //           << std::endl;
     return continuation_gmres_.optError();
   }
 
   Scalar normDiff() const { return diff_norm_; }
 
-  Scalar relativeStandardDeviation() const {
-    return relative_standard_deviation_;
+  Scalar StandardDeviation() const {
+    return standard_deviation_;
   }
 
   ///
@@ -360,12 +360,11 @@ public:
   ///
   template <typename VectorType>
   Scalar optError(const Scalar t, const MatrixBase<VectorType> &x,
-                  const size_t verbose_level) {
-    bool debug;
-    if (verbose_level >= 1) {
+                  const size_t verbose_level = 0) {
+    bool debug = false;
+    if (verbose_level >= 2) {
       debug = true;
     }
-
     if (x.size() != nx) {
       throw std::invalid_argument(
           "[SingleShootingCGMRESSolver::optError] x.size() must be " +
@@ -376,8 +375,8 @@ public:
     return optError();
   }
 
-  Scalar relativeStandardDeviation(Vector<dim> data) {
-    Scalar mean = 0.0, ssd = 0.0, rsd = 0.0;
+  Scalar StandardDeviation(Vector<dim> data) {
+    Scalar mean = 0, ssd = 0.0, rsd = 0.0;
     int n = data.size();
 
     // 平均値を計算
@@ -391,10 +390,7 @@ public:
       ssd += abs(data[i] - mean);
     }
 
-    // 相対標準偏差を計算
-    rsd = (ssd / n) / mean * 100;
-
-    return rsd;
+    return ssd;
   }
 
   ///
@@ -439,7 +435,7 @@ public:
     // 計算結果と初期推定解の差のノルムを求める
     const auto diff = solution_update_ - initial_guess;
     diff_norm_ = diff.norm();
-    relative_standard_deviation_ = relativeStandardDeviation(solution_update_);
+    standard_deviation_ = StandardDeviation(solution_update_);
   }
 
   ///
@@ -476,7 +472,7 @@ private:
   std::array<Vector<nuc>, N> ucopt_;
   std::array<Vector<nub>, N> dummyopt_;
   std::array<Vector<nub>, N> muopt_;
-  Scalar diff_norm_, relative_standard_deviation_;
+  Scalar diff_norm_, standard_deviation_;
 
   Vector<dim> solution_, solution_update_;
 

@@ -14,7 +14,7 @@
     "max_iterations": 50,
     "initial_time": 0.0,
     "initial_state": [0.0, 0.0, 0.0, 0.0],
-    "simulation_length": 10,
+    "simulation_length": 1.0,
     "scalar_vars": [
         {"name": "m_c", "value": 2},
         {"name": "m_p", "value": 0.2},

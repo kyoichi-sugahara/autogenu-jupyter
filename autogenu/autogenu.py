@@ -1172,7 +1172,7 @@ int main() {
     mpc.update(t, x); // update the MPC solution
 
     mpc.optError(t,x,settings.verbose_level); // compute the optimal error
-    logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
+    logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.StandardDeviation());
     x = x1;
     t = t + sampling_time;
   }

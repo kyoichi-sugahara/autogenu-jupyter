@@ -49,7 +49,7 @@ int main() {
   mpc.init_dummy_mu();
 
   // Perform a numerical simulation.
-  const double tsim = 0.01; 
+  const double tsim = 1.0; 
   const double sampling_time = settings.sampling_time;
   const unsigned int sim_steps = std::floor(tsim / sampling_time);
 
@@ -68,7 +68,7 @@ int main() {
     mpc.update(t, x); // update the MPC solution
 
     mpc.optError(t,x,settings.verbose_level); // compute the optimal error
-    logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
+    logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.StandardDeviation());
     x = x1;
     t = t + sampling_time;
   }

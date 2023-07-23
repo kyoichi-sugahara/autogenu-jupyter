@@ -25,8 +25,8 @@ public:
         uopt_log_(log_name + "_uopt.log"),
         opterr_log_(log_name + "_opterr.log"),
         diff_norm_log_(log_name + "_norm_diff.log"),
-        relative_standard_deviation_log_(log_name +
-                                         "_relative_standard_deviation.log") {}
+        standard_deviation_log_(log_name +
+                                         "_standard_deviation.log") {}
 
   ///
   /// @brief Destructor.
@@ -38,7 +38,7 @@ public:
     uopt_log_.close();
     opterr_log_.close();
     diff_norm_log_.close();
-    relative_standard_deviation_log_.close();
+    standard_deviation_log_.close();
   }
 
   ///
@@ -54,7 +54,7 @@ public:
             const MatrixBase<ControlInputVectorType> &u,
             const std::array<ControlInputVectorType, N> &uopt,
             const double opterr, const double norm_diff,
-            const double relative_standard_deviation) {
+            const double standard_deviation) {
     t_log_ << t << '\n';
     x_log_ << x.transpose() << '\n';
     u_log_ << u.transpose() << '\n';
@@ -68,7 +68,7 @@ public:
     uopt_log_ << '\n';
     opterr_log_ << opterr << '\n';
     diff_norm_log_ << norm_diff << '\n';
-    relative_standard_deviation_log_ << relative_standard_deviation << '\n';
+    standard_deviation_log_ << standard_deviation << '\n';
   }
 
   ///
@@ -84,7 +84,7 @@ public:
 private:
   std::string log_name_;
   std::ofstream t_log_, x_log_, u_log_, uopt_log_, opterr_log_, diff_norm_log_,
-      relative_standard_deviation_log_;
+      standard_deviation_log_;
 };
 
 } // namespace cgmres

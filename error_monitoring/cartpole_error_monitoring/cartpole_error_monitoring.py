@@ -25,7 +25,7 @@ def main():
     script_location = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_location)
     # Load the configuration from a JSON file
-    with open(script_dir+'/config/config_20230723.json', 'r') as f:
+    with open(script_dir+'/config/config_20230724.json', 'r') as f:
         config = json.load(f)
 
     # Create and configure the AutoGenU object
