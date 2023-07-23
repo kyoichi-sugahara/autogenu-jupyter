@@ -46,6 +46,26 @@ public:
     const Scalar dt = T / N;
     assert(T >= 0);
     x_[0] = x;
+    // std::ostringstream oss_x, oss_u;
+
+    // oss_x << "x = [";
+    // for(int i=0; i < nx; ++i) {
+    //   oss_x << x_[0].coeff(i);
+    //   if (i != nx - 1)
+    //     oss_x << ", ";
+    // }
+    // oss_x << "]";
+
+    // oss_u << "u = [";
+    // for(int i=0; i<N; ++i) {
+    //   oss_u << solution.coeff(i);
+    //   if (i != N - 1)
+    //     oss_u << ", ";
+    // }
+    // oss_u << "]";
+
+    // std::cerr << oss_x.str() << std::endl;
+    // std::cerr << oss_u.str() << std::endl;
     // Compute the state trajectory over the horizon  
     ocp_.eval_f(t, x_[0].data(), solution.template head<nuc>().data(), dx_.data());
     x_[1] = x_[0] + dt * dx_;
@@ -70,6 +90,29 @@ public:
       ocp_.eval_hu(t+i*dt, x_[i].data(), solution.template segment<nuc>(inucb2).data(),
                    lmd_[i+1].data(), fonc_hu.template segment<nuc>(inucb2).data());
     }
+    // std::ostringstream oss_fonc_hu, oss_fonc_hu_squared;
+
+    // oss_fonc_hu << "fonc_hu = [";
+    // oss_fonc_hu_squared << "fonc_hu^2 = [";
+
+    // for(int i=0; i < N; ++i) {
+    //   double fonc_hu_value = fonc_hu.coeff(i);
+    //   double fonc_hu_squared_value = fonc_hu_value * fonc_hu_value;
+      
+    //   oss_fonc_hu << fonc_hu_value;
+    //   oss_fonc_hu_squared << fonc_hu_squared_value;
+
+    //   if (i != nx - 1) {
+    //     oss_fonc_hu << ", ";
+    //     oss_fonc_hu_squared << ", ";
+    //   }
+    // }
+
+    // oss_fonc_hu << "]";
+    // oss_fonc_hu_squared << "]";
+
+    // std::cerr << oss_fonc_hu.str() << std::endl;
+    // std::cerr << oss_fonc_hu_squared.str() << std::endl;
     if constexpr (nub > 0) {
       for (size_t i=0; i<N; ++i) {
         const int inucb2 = i * (nuc + 2 * nub);

@@ -12,7 +12,7 @@ python3 error_monitoring/error_monitoring.py
 
 ### when python file's change is not reflected
 
-The python module `autogenu` can be instatlled by running
+The python module `autogenu` can be installed by running
 ```
 python3 -m pip install setuptools
 python3 -m pip install .

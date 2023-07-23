@@ -49,7 +49,7 @@ int main() {
   mpc.init_dummy_mu();
 
   // Perform a numerical simulation.
-  const double tsim = 10.0; 
+  const double tsim = 0.01; 
   const double sampling_time = settings.sampling_time;
   const unsigned int sim_steps = std::floor(tsim / sampling_time);
 

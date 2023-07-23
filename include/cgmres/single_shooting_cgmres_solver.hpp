@@ -338,7 +338,9 @@ public:
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
-  Scalar optError() const { return continuation_gmres_.optError(); }
+  Scalar optError() const { 
+    std::cerr << "\n\n\n\n\n continuation_gmres_.optError() = " << continuation_gmres_.optError() << std::endl;
+    return continuation_gmres_.optError(); }
 
   Scalar normDiff() const { return diff_norm_; }
 
