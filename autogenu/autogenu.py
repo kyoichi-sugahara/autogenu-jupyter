@@ -1171,6 +1171,7 @@ int main() {
     const cgmres::VectorX x1 = cgmres::RK4(ocp, t, sampling_time, x, u); // the next state
     mpc.update(t, x); // update the MPC solution
 
+    mpc.optError(t,x,settings.verbose_level); // compute the optimal error
     logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
     x = x1;
     t = t + sampling_time;

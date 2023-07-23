@@ -338,9 +338,12 @@ public:
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
-  Scalar optError() const { 
-    std::cerr << "\n\n\n\n\n continuation_gmres_.optError() = " << continuation_gmres_.optError() << std::endl;
-    return continuation_gmres_.optError(); }
+  Scalar optError() const {
+    std::cerr << "continuation_gmres_.optError() = "
+              << continuation_gmres_.optError() << "\n\n\n"
+              << std::endl;
+    return continuation_gmres_.optError();
+  }
 
   Scalar normDiff() const { return diff_norm_; }
 
@@ -356,14 +359,20 @@ public:
   /// @return The l2-norm of the current optimality errors.
   ///
   template <typename VectorType>
-  Scalar optError(const Scalar t, const MatrixBase<VectorType> &x) {
+  Scalar optError(const Scalar t, const MatrixBase<VectorType> &x,
+                  const size_t verbose_level) {
+    bool debug;
+    if (verbose_level >= 1) {
+      debug = true;
+    }
+
     if (x.size() != nx) {
       throw std::invalid_argument(
           "[SingleShootingCGMRESSolver::optError] x.size() must be " +
           std::to_string(nx));
     }
     continuation_gmres_.synchronize_ocp();
-    continuation_gmres_.eval_fonc(t, x, solution_);
+    continuation_gmres_.eval_fonc(t, x, solution_, debug);
     return optError();
   }
 
@@ -495,6 +504,6 @@ private:
   }
 };
 
-}  // namespace cgmres
+} // namespace cgmres
 
-#endif  // CGMRES__SINGLE_SHOOTING_CGMRES_SOLVER_HPP_
+#endif // CGMRES__SINGLE_SHOOTING_CGMRES_SOLVER_HPP_

@@ -62,10 +62,12 @@ int main() {
 
   std::cout << "Start a simulation..." << std::endl;
   for (unsigned int i=0; i<sim_steps; ++i) {
+    std::cerr << "sim_steps: " << i << std::endl;
     const auto& u = mpc.uopt()[0]; // const reference to the initial optimal control input 
     const cgmres::VectorX x1 = cgmres::RK4(ocp, t, sampling_time, x, u); // the next state
     mpc.update(t, x); // update the MPC solution
 
+    mpc.optError(t,x,settings.verbose_level); // compute the optimal error
     logger.save(t, x, u, mpc.uopt(), mpc.optError(), mpc.normDiff(),mpc.relativeStandardDeviation());
     x = x1;
     t = t + sampling_time;
