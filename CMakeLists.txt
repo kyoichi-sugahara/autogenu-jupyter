@@ -12,9 +12,14 @@ endif()
 
 find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
-add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE include/)
-target_link_libraries(cgmres INTERFACE Eigen3::Eigen)
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+add_library(${PROJECT_NAME} SHARED)
+target_include_directories(${PROJECT_NAME} PUBLIC include/)
+target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
+ament_auto_package()
 # set(CGMRES_LIB_HEADERS
 #   include/cgmres/detail/continuation_gmres.hpp
 #   include/cgmres/detail/continuation_gmres_condensing.hpp
@@ -45,7 +50,7 @@ target_link_libraries(cgmres INTERFACE Eigen3::Eigen)
 #     "${EIGEN3_INCLUDE_DIR}"
 # )
 
-ament_auto_package()
+
 
 # # the interface library
 # add_library(${PROJECT_NAME} INTERFACE)
