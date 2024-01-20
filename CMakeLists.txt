@@ -16,9 +16,9 @@ include_directories(
   SYSTEM
     ${EIGEN3_INCLUDE_DIR}
 )
-add_library(${PROJECT_NAME} SHARED)
-target_include_directories(${PROJECT_NAME} PUBLIC include/)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE include/)
+target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
 ament_auto_package()
 # set(CGMRES_LIB_HEADERS
 #   include/cgmres/detail/continuation_gmres.hpp
