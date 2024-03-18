@@ -32,7 +32,8 @@ int main() {
   // Define the initial time and initial state.
   const double t0 = 0;
   cgmres::Vector<3> x0;
-  x0 << 0, 0, 0;
+  // x0 << 0, 0, 0;
+  x0 << 0.0181297, 0.151059, 0;
 
   // Initialize the solution of the C/GMRES method.
   constexpr int kmax_init = 1;
@@ -42,7 +43,7 @@ int main() {
   initializer.set_uc(uc0);
   initializer.solve(t0, x0);
   const double ucopt = initializer.ucopt()[0];
-  std::cerr << "uopt: " << uopt << std::endl;
+  std::cerr << "uopt: " << ucopt << std::endl;
 
   // Define the C/GMRES solver.
   constexpr int N = 50;
