@@ -13,10 +13,9 @@
 int main() {
   // Define the optimal control problem.
   cgmres::OCP_lateral_control ocp;
-  std::cerr << "test \n\n\n\n\n" << std::endl;
 
   // Define the horizon.
-  const double Tf = 2.0;
+  const double Tf = 0.1;
   const double alpha = 0.0;
   cgmres::Horizon horizon(Tf, alpha);
 
@@ -39,7 +38,7 @@ int main() {
   constexpr int kmax_init = 1;
   cgmres::ZeroHorizonOCPSolver<cgmres::OCP_lateral_control, kmax_init> initializer(ocp, settings);
   cgmres::Vector<1> uc0;
-  uc0 << 0.0;
+  uc0 << 0.1;
   initializer.set_uc(uc0);
   initializer.solve(t0, x0);
   const double ucopt = initializer.ucopt()[0];
@@ -66,7 +65,7 @@ int main() {
 
   std::cout << "Start a simulation..." << std::endl;
   for (unsigned int i=0; i<sim_steps; ++i) {
-    std::cerr << "sim_steps: " << i << std::endl;
+    // std::cerr << "sim_steps: " << i << std::endl;
     const auto& u = mpc.uopt()[0]; // const reference to the initial optimal control input 
     const cgmres::VectorX x1 = cgmres::RK4(ocp, t, sampling_time, x, u); // the next state
     mpc.update(t, x); // update the MPC solution
