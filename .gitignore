@@ -1,8 +1,3 @@
-build/
-install/
-generated/
-__pycache__/
-.ipynb_checkpoints/
 .vscode/
 *.db
 *.egg-info
