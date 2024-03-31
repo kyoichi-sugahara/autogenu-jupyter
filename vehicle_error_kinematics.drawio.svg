@@ -1,0 +1,149 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1"
+  width="631px"
+  height="653px"
+  viewBox="-0.5 -0.5 631 653"
+  content="&lt;mxfile host=&quot;0i6112g2df9b6ngu9buda4iblme4t77dtbb7m4umbjihr1cp3ej8&quot; modified=&quot;2024-03-25T16:04:23.837Z&quot; agent=&quot;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.87.2 Chrome/118.0.5993.159 Electron/27.3.2 Safari/537.36&quot; etag=&quot;_ZCmlqSgQoxUzbi_6bSE&quot; version=&quot;12.2.4&quot; pages=&quot;1&quot;&gt;&lt;diagram id=&quot;m4EhamB760nrZxVQq2bh&quot; name=&quot;Page-1&quot;&gt;7Vptc6M2EP41+pgbhBCIj+CQ60ynnbbJzH3scEY23GDkgvx2v74SCIwEThwXu8nl/MFGq/d9dpdndwzQbLX/XMbr9DeW0BzYVrIH6B7Ytotc8S0Fh0aACWwEyzJLGlFP8Jh9p0poKekmS2ilDeSM5Txb68I5Kwo655osLku204ctWK7vuo6XdCB4nMf5UPolS3jaSAm2jvJfaLZM252hpXpWcTtYCao0TtiuJ0IRQLOSMd48rfYzmkvdtXpp5j2c6O0OVtKCnzPhTy89fHnacvwN/Xqf/536FfXu7GaVbZxv1IXVYfmh1UDJNkVC5SIQoHCXZpw+ruO57N0JyIUs5atcdZeMxzxjhWjeYSwEw1Oqg29pyem+J1Kn/kzZivLyIIaoXgcpDSoTgm17dwQEtlpOe2C4ShYrG1h2Sx/VJB6Upl6hNXhFraGJtEaIpjRE/m+lOS8rjRZJIH1WtOZ5XFXZXNfTSbXQRPPioVJ6t8Yjl25lJc0FEFvd98c0oXb4g2XiJJ3OoYM0pTvQ1peo2KacUzWr76vGQl34UwvZvoEKj8sl5YOFamC6a1+OFXoVVgUr6LsH6hO+DCqH+Hp0ctFNofL+I1RJXKVdnHrruI0o+1LcMDFc7LYeRj46bI7f+1wGoWvrELr+TSHEQwgjAsIQkABEDggJCCCIEBCMN4hA5ANhcWE9RsjJDEQu8F0Q+iDCQMR3Hw4sQLzqucEUaJV9j7/WAyzRXsvL1dfFIcD3QhJvOKsaGi0nxHm2lLwipwu5lOQPmWC3gRJzJqlIJZhJViyfZONevKgnISDQMxwMjzAQa8ToTE+cjIG4L/ucIOlr+bjI6V45X/gSK3lXrmiA0tHC1/oedG19oRvHT3/E+TAIo9qxhBfOQBAodxSOOHQ1wy/9h3p6AAL3x/JCbDhhG4n7Tghv6YTtZpoXurlUy4LVFrZo0iQh/Wcjk+PwKVvRSnT8Tnfi+y+2iotjp4ZVK5Qr3TX6D8QA21vv66HHSe6y/p1F0jzU/uI+zRFU59sxBHksVRuxvWkMw7aMSADxwDLG8sPrGcZYVn0Lwxi3Cqfd/Gt5NIgPaCfYiCDe8C2ORswEXc1M7KnNpEFx+yHRNatE8HbonlFjmG/Kbcesnk2HROdDJreqAXhXjAz6RhbjwU+ClvnIIw7xPNsoJ5ydHBn5LXLOI2hCx/GhN0wZ88nj2y1ubYFfZWGnzoWMpK3NDU/WV8zx3vPjsTkeW8/rySi1OZY2Xjw0GrmUvX6AsqdtFOixayxxrs0i5IxifYWkYiR5H8CS59m6oi+X7xci8sxYzsp6HrLqz0QszdMLlRiSQYAeo+9wggB9Rrr87i3X199/2CGXWa6ZZ3UVr+kt9+3w5P1Piqy/WlvwnWGSfS0WNT0dvtQaDj+toQkFpjX4w5B9NWsYIdURBuQBEPHgAYJB4LVV6lld+4LAR28IkAkAcAxCjfxhUuOOAHBBZUM0j3/gaGL58V8wKPoX&lt;/diagram&gt;&lt;/mxfile&gt;"
+>
+  <defs/>
+  <g>
+    <rect x="380" y="110" width="120" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" transform="rotate(-55,440,140)" pointer-events="all"/>
+    <rect x="38" y="360" width="120" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" transform="rotate(-35,98,390)" pointer-events="all"/>
+    <path d="M 93 392 L 156.93 275.58" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 159.46 270.98 L 159.16 278.8 L 156.93 275.58 L 153.02 275.43 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 93 392.5 L 439 143" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 439 143.5 L 530 0" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <path d="M 439 143.5 L 570 49" fill="none" stroke="#000000" stroke-miterlimit="10" stroke-dasharray="3 3" pointer-events="stroke"/>
+    <rect x="120" y="230" width="100" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(121.5,232.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="84" height="12">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">車両の進行方向</div>
+        </div>
+      </foreignObject>
+    </g>
+    <path
+      d="M 23.15 363.91 L 17.69 355.54 L 92.94 306.46 L 87.2 297.67 L 111.58 300.27 L 104.13 323.64 L 98.4 314.84 Z"
+      fill="none"
+      stroke="#000000"
+      stroke-linejoin="round"
+      stroke-miterlimit="10"
+      stroke-dasharray="3 3"
+      pointer-events="all"
+    />
+    <rect x="0" y="269" width="110" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(1.5,271.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="96" height="12">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">後輪軸方向の速度</div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="150" y="295" width="20" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(151.5,297.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="13" height="30">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 27px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <font face="Times New Roman" style="font-size: 27px">θ</font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="500" y="50" width="30" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(501.5,52.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="13" height="30">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 27px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <font face="Times New Roman" style="font-size: 27px">
+              δ
+              <br/>
+            </font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="38" y="290" width="30" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(39.5,292.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="14" height="30">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 27px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <font face="Times New Roman">v</font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <path
+      d="M 140 651.38 Q 172 549 221 509 Q 270 469 320 464 Q 370 459 420 444.5 Q 470 430 515 405 Q 560 380 630 320"
+      fill="none"
+      stroke="#000000"
+      stroke-miterlimit="10"
+      stroke-dasharray="3 3"
+      pointer-events="stroke"
+    />
+    <path d="M 180 541 L 279 462.94" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 283.12 459.69 L 279.79 466.77 L 279 462.94 L 275.46 461.28 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <ellipse cx="228" cy="503" rx="5" ry="5" fill="#000000" stroke="#000000" pointer-events="all"/>
+    <path d="M 248 528 L 204.02 473.94" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
+    <path d="M 200.71 469.87 L 207.84 473.09 L 204.02 473.94 L 202.41 477.51 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/>
+    <rect x="290" y="429" width="30" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(291.5,431.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="14" height="30">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 27px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <font face="Times New Roman" style="font-size: 27px">
+              x
+              <br/>
+            </font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="190" y="478" width="30" height="30" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(191.5,480.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="14" height="30">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 27px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">
+            <font face="Times New Roman" style="font-size: 27px">
+              y
+              <br/>
+            </font>
+          </div>
+        </div>
+      </foreignObject>
+    </g>
+    <rect x="440" y="370" width="60" height="20" fill="none" stroke="none" pointer-events="all"/>
+    <g transform="translate(441.5,372.5)">
+      <foreignObject style="overflow:visible;" pointer-events="all" width="48" height="12">
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+          style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; white-space: nowrap; text-align: left;"
+        >
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit;">参照軌道</div>
+        </div>
+      </foreignObject>
+    </g>
+  </g>
+</svg>
