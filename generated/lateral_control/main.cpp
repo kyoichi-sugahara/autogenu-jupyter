@@ -31,18 +31,15 @@ int main() {
   // Define the initial time and initial state.
   const double t0 = 0;
   cgmres::Vector<3> x0;
-  // x0 << 0, 0, 0;
-  x0 << 0.0181297, 0.151059, 0;
+  x0 << 0, 0, 0;
 
   // Initialize the solution of the C/GMRES method.
   constexpr int kmax_init = 1;
   cgmres::ZeroHorizonOCPSolver<cgmres::OCP_lateral_control, kmax_init> initializer(ocp, settings);
   cgmres::Vector<1> uc0;
-  uc0 << 0.1;
+  uc0 << 0.0;
   initializer.set_uc(uc0);
   initializer.solve(t0, x0);
-  const double ucopt = initializer.ucopt()[0];
-  std::cerr << "uopt: " << ucopt << std::endl;
 
   // Define the C/GMRES solver.
   constexpr int N = 50;
@@ -52,7 +49,7 @@ int main() {
   mpc.init_dummy_mu();
 
   // Perform a numerical simulation.
-  const double tsim = 10; 
+  const double tsim = 100; 
   const double sampling_time = settings.sampling_time;
   const unsigned int sim_steps = std::floor(tsim / sampling_time);
 
@@ -65,7 +62,7 @@ int main() {
 
   std::cout << "Start a simulation..." << std::endl;
   for (unsigned int i=0; i<sim_steps; ++i) {
-    // std::cerr << "sim_steps: " << i << std::endl;
+    std::cerr << "sim_steps: " << i << std::endl;
     const auto& u = mpc.uopt()[0]; // const reference to the initial optimal control input 
     const cgmres::VectorX x1 = cgmres::RK4(ocp, t, sampling_time, x, u); // the next state
     mpc.update(t, x); // update the MPC solution

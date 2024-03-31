@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
+from sympy import sin, cos, tan, exp, log, sinh, cosh, tanh, atan, diff, sqrt
 import os
 import sys
 
@@ -111,6 +112,180 @@ class TwoLinkArm(object):
             '{0:.1f} [s]'.format(self.__sampling_time*frame)
         )
         return self.__link1, self.__link2, self.__time_text
+
+class TrajectoryFollowing(object):
+    """ Generates the animation of the simulation results of a trajectory following.
+
+        Attributes: 
+            set_skip_frames(skip_frames): Sets how many frames you want to 
+                skip in generating the animation. In the default settings, 
+                skip_frames = 1.
+            generate_animation(): Draws an animation of the simulation reult
+                and saves it as a .mp4 files.
+    """
+
+    def __init__(self, log_dir, log_name: str):
+        """ Inits CartPole with loading the simulation results. """
+        # Loads the simulation data.
+        self.__log_dir = log_dir
+        self.__log_name = log_name
+        self.__t_data = np.genfromtxt(os.path.join(log_dir, log_name+"_t.log"))
+        self.__x_data = np.genfromtxt(os.path.join(log_dir, log_name+"_x.log"))
+        self.__uopt_data = np.genfromtxt(os.path.join(log_dir, log_name+"_uopt.log"))
+        self.__sampling_time = self.__t_data[1] - self.__t_data[0] 
+        # Replaces NaN with 0.
+        self.__x_data[np.isnan(self.__x_data)] = 0
+        # Checks the dimension of the state.
+        self.__dim_x = self.__x_data.shape[1]
+        if self.__dim_x != 3:
+            print(
+                'Dimension of the state is not 4!\n'
+                'This may not be data for simulation of a cartpole\n'
+            )
+            sys.exit() 
+        # Sets the drawing range.
+        xabsmax = max(
+            abs(np.amin(self.__x_data[:, 0])), 
+            abs(np.amax(self.__x_data[:, 0]))
+        )
+        self.__x_min = - xabsmax - 2.5 
+        self.__x_max = xabsmax + 2.5
+        self.__y_min = - (self.__x_max - self.__x_min) * 0.3 * (6/8)
+        self.__y_max = (self.__x_max - self.__x_min) * 0.7 * (6/8)
+        self.__velocity = 1.0
+        self.__N = 50
+        self.__prediction_dt = 0.1
+        self.__interval = self.__prediction_dt/self.__N
+        self.__v_in_reference_trajectory = 1.0
+        self.__curvature_in_reference_trajectory = -0.5
+        self.__wheel_base = 2.79
+        self.__τ = 0.3
+        # Sets frames for drawing the animation.
+        self.__skip_frames = 1
+        self.__total_frames = (int)(self.__x_data.shape[0]/self.__skip_frames)
+
+    def set_skip_frames(self, skip_frames):
+        """ Set how many frames you want to skip in generating the animation.
+
+            Args:
+                skip_frames: A number of frames to skip.
+        """
+        self.__skip_frames = skip_frames
+        self.__total_frames = (int)(self.__x_data.shape[0]/skip_frames)
+
+    def __calculate_values(self, x, u):
+        """Calculate three values based on the input vectors x and u."""
+
+        f = [
+            self.__v_in_reference_trajectory * sin(x[2]),
+            self.__v_in_reference_trajectory * cos(x[2]),
+            self.__v_in_reference_trajectory * tan(x[3]) / self.__wheel_base,
+            -1 / self.__τ * (x[3] - u[0]),
+        ]
+
+        return f
+    
+    def __update_state(self, x, u):
+        """Calculate three values based on the input vectors x and u."""
+
+        f = self.__calculate_values(x, u)
+        x = x + np.array(f) * self.__interval
+
+        return f
+
+    def generate_animation(self):
+        """ Generates the animation and saves it as a .mp4 file. """
+        # Create a new figure with specified size
+        self.__fig = plt.figure(figsize=(8, 6))
+
+        # Add axes to the figure with specified x and y limits
+        self.__ax = plt.axes(
+            xlim=(self.__x_min, self.__x_max), 
+            ylim=(self.__y_min, self.__y_max)
+        )
+
+        # Create empty plots for ground and cart parts, which will be updated in each frame
+        self.__reference_trajectory, = self.__ax.plot([], [], color='#0063B1', linewidth=0.5)
+        self.__predicted_path, = self.__ax.plot([], [], color='#0063B1', linewidth=1.5)
+
+        # Hide axis labels
+        self.__ax.tick_params(
+            labelbottom=False, 
+            labelleft=False, 
+            labelright=False, 
+            labeltop=False
+        )
+
+        # Set axis tick color to white
+        self.__ax.tick_params(color='white')
+
+        # Create a text object for displaying time, which will be updated in each frame
+        self.__time_text = self.__ax.text(
+            0.85, 0.05, 
+            '', 
+            transform=self.__ax.transAxes, 
+            fontsize=14
+        )
+
+        # Generate an animation by repeatedly calling __update_animation method
+        anime = FuncAnimation(
+            self.__fig, 
+            self.__update_animation, 
+            interval=self.__sampling_time*1000*self.__skip_frames, 
+            frames=self.__total_frames, 
+            blit=True
+        )
+
+        # Save the generated animation as a .mp4 file
+        anime.save(
+            os.path.join(self.__log_dir, self.__log_name+'.mp4'),
+            writer='ffmpeg', 
+            fps=int(
+                1/(self.__sampling_time*self.__skip_frames)
+            )
+        )
+
+        # Print the location where the animation is saved
+        print(
+            'The animation of the simulation results is generated at '
+            +self.__log_dir
+        )
+
+    def __update_animation(self, i):
+        frame = self.__skip_frames * i
+        state = self.__x_data[frame, :]
+        self.__xc = state[0]
+        self.__yc = 0
+        self.__xp = self.__xc + self.__pole_length * np.sin(state[1])
+        self.__yp = 0.5 * self.__cart_height - self.__pole_length*np.cos(state[1])
+        self.__ground.set_data((self.__x_min, self.__x_max), (0, 0))
+        self.__cartt.set_data(
+            (self.__xc-0.5*self.__cart_width, self.__xc+0.5*self.__cart_width), 
+            (self.__cart_height, self.__cart_height)
+        )
+        self.__cartb.set_data(
+            (self.__xc-0.5*self.__cart_width, self.__xc+0.5*self.__cart_width), 
+            (0, 0)
+        )
+        self.__cartr.set_data(
+            (self.__xc+0.5*self.__cart_width, self.__xc+0.5*self.__cart_width), 
+            (0, self.__cart_height)
+        )
+        self.__cartl.set_data(
+            (self.__xc-0.5*self.__cart_width, self.__xc-0.5*self.__cart_width), 
+            (0, self.__cart_height)
+        )
+        self.__pole.set_data(
+            (self.__xc, self.__xp), 
+            (0.5*self.__cart_height, self.__yp)
+        )
+        self.__time_text.set_text(
+            '{0:.1f} [s]'.format(self.__sampling_time*frame)
+        )
+        return (
+            self.__ground, self.__cartt, self.__cartb, self.__cartr, self.__cartl, 
+            self.__pole, self.__time_text
+        )
 
 
 class CartPole(object):

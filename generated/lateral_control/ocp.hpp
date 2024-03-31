@@ -51,16 +51,17 @@ public:
   ///
   static constexpr int nub = 1;
 
-  double v_in_reference_trajectory = 3.0;
-  double curvature_in_reference_trajectory = 0.5;
-  double smoothed_curvature_in_reference_trajectory = 0.5;
+  double v_in_reference_trajectory = 1.0;
+  double curvature_in_reference_trajectory = -0.5;
+  double smoothed_curvature_in_reference_trajectory = -0.5;
   double wheel_base = 2.79;
   double τ = 0.3;
 
   std::array<double, 3> q = {1.0, 0.1, 0.0};
   std::array<double, 3> q_terminal = {1.0, 0.1, 0.0};
   std::array<double, 3> x_ref = {0, 0, 0};
-  std::array<double, 1> r = {1.0};
+  std::array<double, 1> u_ref = {-0.948853649067464};
+  std::array<double, 1> r = {0.1};
 
   static constexpr std::array<int, nub> ubound_indices = {0};
   std::array<double, nub> umin = {-15.0};
@@ -87,6 +88,7 @@ public:
     os << "  q: " << Map<const VectorX>(q.data(), q.size()).transpose().format(fmt) << std::endl;
     os << "  q_terminal: " << Map<const VectorX>(q_terminal.data(), q_terminal.size()).transpose().format(fmt) << std::endl;
     os << "  x_ref: " << Map<const VectorX>(x_ref.data(), x_ref.size()).transpose().format(fmt) << std::endl;
+    os << "  u_ref: " << Map<const VectorX>(u_ref.data(), u_ref.size()).transpose().format(fmt) << std::endl;
     os << "  r: " << Map<const VectorX>(r.data(), r.size()).transpose().format(fmt) << std::endl;
     os << std::endl;
     os << "  ubound_indices: " << Map<const VectorXi>(ubound_indices.data(), ubound_indices.size()).transpose().format(intfmt) << std::endl;
@@ -174,7 +176,7 @@ public:
   ///
   void eval_hu(const double t, const double* x, const double* u, 
                const double* lmd, double* hu) const {
-    hu[0] = lmd[2]/τ + r[0]*u[0];
+    hu[0] = lmd[2]/τ + (1.0/2.0)*r[0]*(2*u[0] - 2*u_ref[0]);
  
   }
 
