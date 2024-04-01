@@ -164,7 +164,6 @@ class TrajectoryFollowing(object):
         self.__skip_frames = 1
         self.__total_frames = (int)(self.__x_data.shape[0] / self.__skip_frames)
 
-        self.__ground
 
     def set_skip_frames(self, skip_frames):
         """Set how many frames you want to skip in generating the animation.
@@ -181,6 +180,9 @@ class TrajectoryFollowing(object):
         self.__fig = plt.figure(figsize=(8, 6))
 
         # Add axes to the figure with specified x and y limits
+        # self.__ax = plt.axes(
+        #     xlim=(self.__x_min, self.__x_max), ylim=(self.__y_min, self.__y_max)
+        # )        
         self.__ax = plt.axes(
             xlim=(self.__x_min, self.__x_max), ylim=(self.__y_min, self.__y_max)
         )
@@ -192,11 +194,11 @@ class TrajectoryFollowing(object):
         (self.__predicted_path,) = self.__ax.plot(
             [], [], color="#0063B1", linewidth=1.5
         )
-        (self.__base_link,) = self.__ac.plot([], [], color="#0063B1", linewidth=1.5)
+        # (self.__base_link,) = self.__ac.plot([], [], color="#0063B1", linewidth=1.5)
 
         # Hide axis labels
         self.__ax.tick_params(
-            labelbottom=False, labelleft=False, labelright=False, labeltop=False
+            labelbottom=True, labelleft=True, labelright=True, labeltop=True
         )
 
         # Set axis tick color to white
@@ -247,6 +249,16 @@ class TrajectoryFollowing(object):
         x = x + np.array(f) * self.__interval
 
         return f
+    
+    def __calculate_trajecotry(self, x, u):
+        """Calculate three values based on the input vectors x and u."""
+        x_series = []
+        y_series = []
+        for i in range(self.__N):
+            x_series.append(x[0])
+            y_series.append(x[1])
+            x = x + np.array(self.__calculate_values(x, u)) * self.__prediction_dt
+        return x_series, y_series
 
     def __update_animation(self, i):
         """Updates the animation for the i-th frame."""
@@ -257,18 +269,23 @@ class TrajectoryFollowing(object):
         state = self.__x_data[frame, :]
         state = np.insert(state, 0, 0.0)
         input_array = self.__uopt_data[frame, :]
-        print(len(input_array))
+        x_series,y_series = self.__calculate_trajecotry(state, input_array)
+        # print(len(input_array))
+        self.__reference_trajectory.set_data(
+            x_series, y_series
+        )
 
         # Calculate the x and y coordinates of reference trajectory
-        self.__xc = state[0]
-        self.__yc = 0
+        # self.__xc = state[0]
+        # self.__yc = state[1]
+
 
         # Calculate the x and y coordinates of the pole
         # self.__xp = self.__xc + self.__pole_length * np.sin(state[1])
         # self.__yp = 0.5 * self.__cart_height - self.__pole_length*np.cos(state[1])
 
         # Update the ground plot
-        self.__ground.set_data((self.__x_min, self.__x_max), (0, 0))
+        # self.__ground.set_data((self.__x_min, self.__x_max), (0, 0))
 
         # Update the top of the cart plot
         # self.__cartt.set_data(
@@ -307,7 +324,6 @@ class TrajectoryFollowing(object):
         return (
             self.__reference_trajectory,
             self.__predicted_path,
-            self.__base_link,
             self.__time_text,
         )
 
