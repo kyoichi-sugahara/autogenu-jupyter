@@ -290,6 +290,12 @@ public:
   const std::array<Vector<nub>, N>& muopt() const { return muopt_; }
 
   ///
+  /// @brief Getter of the optimal solution setting.
+  /// @return const reference to the number of discretization grids of the horizon..
+  ///
+  static constexpr int getN() { return N; }
+
+  ///
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
