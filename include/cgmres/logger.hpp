@@ -1,8 +1,12 @@
 #ifndef CGMRES__LOGGER_HPP_
 #define CGMRES__LOGGER_HPP_
 
+#include <sys/stat.h>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <unistd.h>
+#include <sys/time.h>
 
 #include "cgmres/types.hpp"
 #include "cgmres/timer.hpp"
@@ -20,13 +24,49 @@ public:
   /// @brief Constructor.
   /// @param[in] log_name Name of the log.
   ///
-  explicit Logger(const std::string& log_name)
-    : log_name_(log_name),
-       t_log_(log_name+ "_t.log"), 
-       x_log_(log_name+ "_x.log"), 
-       u_log_(log_name + "_u.log"), 
-       opterr_log_(log_name + "_opterr.log") {
-  }
+explicit Logger(const std::string& log_dir) {
+    // Check if the specified directory exists
+    struct stat info;
+    if (stat(log_dir.c_str(), &info) != 0 || !(info.st_mode & S_IFDIR)) {
+        // Directory does not exist
+        std::stringstream ss;
+        ss << "Error: The specified directory does not exist: " << log_dir;
+        throw std::runtime_error(ss.str());
+    }
+
+    // Get current process ID
+    pid_t pid = getpid();
+
+    // Get current timestamp
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    int64_t timestamp = static_cast<int64_t>(tv.tv_sec) * 1000000 + tv.tv_usec;
+
+    // Create number string
+    std::stringstream ss;
+    ss << "_" << pid << "_" << timestamp;
+    std::string number_string = ss.str();
+
+    // Create directory name
+    std::string directory = log_dir + "cgmres_debug" + number_string;
+
+    // Create directory
+    mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+    // Create log file names
+    std::string t_log_name = directory + "/t.log";
+    std::string x_log_name = directory + "/x.log";
+    std::string u_log_name = directory + "/u.log";
+    std::string uopt_log_name = directory + "/uopt.log";
+    std::string opterr_log_name = directory + "/opterr.log";
+
+    // Open log files
+    t_log_.open(t_log_name);
+    x_log_.open(x_log_name);
+    u_log_.open(u_log_name);
+    uopt_log_.open(uopt_log_name);
+    opterr_log_.open(opterr_log_name);
+}
 
   ///
   /// @brief Destructor.
@@ -35,6 +75,7 @@ public:
     t_log_.close();
     x_log_.close();
     u_log_.close();
+    uopt_log_.close();
     opterr_log_.close();
   }
 
@@ -45,13 +86,22 @@ public:
   /// @param[in] u Control input.
   /// @param[in] opterr Optimality error.
   ///
-  template <typename StateVectorType, typename ControlInputVectorType>
-  void save(const Scalar t, const MatrixBase<StateVectorType>& x, 
+  template <typename StateVectorType, typename ControlInputVectorType, std::size_t N>
+  void save(const Scalar t, const MatrixBase<StateVectorType>& x,
             const MatrixBase<ControlInputVectorType >& u,
+            const std::array<ControlInputVectorType, N> &uopt,
             const double opterr) {
     t_log_ << t << '\n';
     x_log_ << x.transpose() << '\n';
     u_log_ << u.transpose() << '\n';
+    for (auto &matrix : uopt) {
+      for (int i = 0; i < matrix.rows(); i++) {
+        for (int j = 0; j < matrix.cols(); j++) {
+          uopt_log_ << matrix(i, j) << " ";
+        }
+      }
+    }
+    uopt_log_ << '\n';
     opterr_log_ << opterr << '\n';
   }
 
