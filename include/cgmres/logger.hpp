@@ -117,7 +117,7 @@ explicit Logger(const std::string& log_dir) {
 
 private:
   std::string log_name_;
-  std::ofstream t_log_, x_log_, u_log_, opterr_log_;
+  std::ofstream t_log_, x_log_, u_log_, uopt_log_, opterr_log_;
 };
 
 } // namespace cgmres
