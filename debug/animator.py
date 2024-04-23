@@ -6,6 +6,7 @@ from sympy import sin, cos, tan, exp, log, sinh, cosh, tanh, atan, diff, sqrt
 import os
 import sys
 
+
 class TrajectoryFollowing(object):
     """Generates the animation of the simulation results of a trajectory following.
 
@@ -24,7 +25,7 @@ class TrajectoryFollowing(object):
         self.__t_data = np.genfromtxt(os.path.join(log_dir, "t.log"))
         self.__x_data = np.genfromtxt(os.path.join(log_dir, "x.log"))
         self.__uopt_data = np.genfromtxt(os.path.join(log_dir, "uopt.log"))
-        self.__sampling_time = (self.__t_data[1] - self.__t_data[0])/1000
+        self.__sampling_time = (self.__t_data[1] - self.__t_data[0]) / 1000
         # Replaces NaN with 0.
         self.__x_data[np.isnan(self.__x_data)] = 0
         # Checks the dimension of the state.
@@ -39,12 +40,8 @@ class TrajectoryFollowing(object):
         xabsmax = max(
             abs(np.amin(self.__x_data[:, 0])), abs(np.amax(self.__x_data[:, 0]))
         )
-        self.__x_min = -xabsmax - 2.5
-        self.__x_max = xabsmax + 2.5
-        self.__y_min = -(self.__x_max - self.__x_min) * 0.3 * (6 / 8)
-        self.__y_max = (self.__x_max - self.__x_min) * 0.7 * (6 / 8)
         self.__velocity = 1.0
-        self.__N = 50
+        self.__N = self.__uopt_data.shape[1]
         self.__prediction_dt = 0.1
         self.__interval = self.__prediction_dt / self.__N
         self.__v_in_reference_trajectory = 1.0
@@ -53,7 +50,9 @@ class TrajectoryFollowing(object):
         # Sets frames for drawing the animation.
         self.__skip_frames = 1
         self.__total_frames = (int)(self.__x_data.shape[0] / self.__skip_frames)
-
+        self.__x_min, self.__x_max, self.__y_min, self.__y_max = (
+            self.__calculate_plot_range(margin=0.1)
+        )
 
     def set_skip_frames(self, skip_frames):
         """Set how many frames you want to skip in generating the animation.
@@ -74,7 +73,8 @@ class TrajectoryFollowing(object):
         #     xlim=(self.__x_min, self.__x_max), ylim=(self.__y_min, self.__y_max)
         # )
         self.__ax = plt.axes(
-            xlim=(self.__x_min, self.__x_max), ylim=(self.__y_min, self.__y_max)
+            xlim=np.array([self.__x_min, self.__x_max], dtype=float),
+            ylim=np.array([self.__y_min, self.__y_max], dtype=float),
         )
 
         # Create empty plots for ground and cart parts, which will be updated in each frame
@@ -99,6 +99,10 @@ class TrajectoryFollowing(object):
             0.85, 0.05, "", transform=self.__ax.transAxes, fontsize=14
         )
 
+        # Create the "plots" folder under self.__log_dir if it doesn't exist
+        plots_dir = os.path.join(self.__log_dir, "plots")
+        os.makedirs(plots_dir, exist_ok=True)
+
         # Generate an animation by repeatedly calling __update_animation method
         anime = FuncAnimation(
             self.__fig,
@@ -107,6 +111,11 @@ class TrajectoryFollowing(object):
             frames=self.__total_frames,
             blit=True,
         )
+
+        # Save each frame of the animation as a separate plot in the "plots" folder under self.__log_dir
+        for i in range(self.__total_frames):
+            self.__update_animation(i)
+            self.__fig.savefig(os.path.join(plots_dir, f"frame_{i:04d}.png"))
 
         # Save the generated animation as a .mp4 file
         anime.save(
@@ -119,6 +128,22 @@ class TrajectoryFollowing(object):
         print(
             "The animation of the simulation results is generated at " + self.__log_dir
         )
+
+    def __calculate_plot_range(self, margin=0.1):
+        """Calculate the range of the plot based on the simulation results."""
+
+        for i in range(self.__total_frames):
+            # Get the initial state at the current frame
+            state = self.__x_data[i * self.__skip_frames, :]
+            # insert x value of initial position as 0
+            state = np.insert(state, 0, 0.0)
+            input_array = self.__uopt_data[i * self.__skip_frames, :]
+            x_series, y_series = self.__calculate_trajecotry(state, input_array)
+            x_max = np.amax(x_series)
+            x_min = np.amin(x_series)
+            y_max = np.amax(y_series)
+            y_min = np.amin(y_series)
+        return x_min - margin, x_max + margin, y_min - margin, y_max + margin
 
     def __calculate_values(self, x, u):
         """Calculate three values based on the input vectors x and u."""
@@ -157,18 +182,16 @@ class TrajectoryFollowing(object):
 
         # Get the initial state at the current frame
         state = self.__x_data[frame, :]
+        # insert x value of initial position as 0
         state = np.insert(state, 0, 0.0)
         input_array = self.__uopt_data[frame, :]
-        x_series,y_series = self.__calculate_trajecotry(state, input_array)
+        x_series, y_series = self.__calculate_trajecotry(state, input_array)
         # print(len(input_array))
-        self.__reference_trajectory.set_data(
-            x_series, y_series
-        )
+        self.__reference_trajectory.set_data(x_series, y_series)
 
         # Calculate the x and y coordinates of reference trajectory
         # self.__xc = state[0]
         # self.__yc = state[1]
-
 
         # Calculate the x and y coordinates of the pole
         # self.__xp = self.__xc + self.__pole_length * np.sin(state[1])
