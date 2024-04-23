@@ -22,10 +22,22 @@ class TrajectoryFollowing(object):
         """Inits CartPole with loading the simulation results."""
         # Loads the simulation data.
         self.__cgmres_log_dir = cgmres_log_dir
+        self.__trajectory_log_dir = trajectory_log_dir
         self.__t_data = np.genfromtxt(os.path.join(cgmres_log_dir, "t.log"))
         self.__x_data = np.genfromtxt(os.path.join(cgmres_log_dir, "x.log"))
         self.__uopt_data = np.genfromtxt(os.path.join(cgmres_log_dir, "uopt.log"))
         self.__sampling_time = (self.__t_data[1] - self.__t_data[0]) / 1000
+        data = []
+        with open(os.path.join(trajectory_log_dir, "resampled_x.log"), "r") as file:
+            for line in file:
+                data.append(np.fromstring(line.strip(), sep=','))
+        self.__resampled_ref_trajectory_x = np.array(data)
+        data = []
+        with open(os.path.join(trajectory_log_dir, "resampled_y.log"), "r") as file:
+            for line in file:
+                data.append(np.fromstring(line.strip(), sep=','))
+        self.__resampled_ref_trajectory_y = np.array(data)
+
         # Replaces NaN with 0.
         self.__x_data[np.isnan(self.__x_data)] = 0
         # Checks the dimension of the state.
@@ -69,9 +81,6 @@ class TrajectoryFollowing(object):
         self.__fig = plt.figure(figsize=(8, 6))
 
         # Add axes to the figure with specified x and y limits
-        # self.__ax = plt.axes(
-        #     xlim=(self.__x_min, self.__x_max), ylim=(self.__y_min, self.__y_max)
-        # )
         self.__ax = plt.axes(
             xlim=np.array([self.__x_min, self.__x_max], dtype=float),
             ylim=np.array([self.__y_min, self.__y_max], dtype=float),
@@ -140,7 +149,7 @@ class TrajectoryFollowing(object):
             # insert x value of initial position as 0
             state = np.insert(state, 0, 0.0)
             input_array = self.__uopt_data[i * self.__skip_frames, :]
-            x_series, y_series = self.__calculate_trajecotry(state, input_array)
+            x_series, y_series = self.__calculate_trajectory(state, input_array)
             x_max = np.amax(x_series)
             x_min = np.amin(x_series)
             y_max = np.amax(y_series)
@@ -167,7 +176,7 @@ class TrajectoryFollowing(object):
 
         return f
 
-    def __calculate_trajecotry(self, x, u):
+    def __calculate_trajectory(self, x, u):
         """Calculate three values based on the input vectors x and u."""
         x_series = []
         y_series = []
@@ -187,7 +196,9 @@ class TrajectoryFollowing(object):
         # insert x value of initial position as 0
         state = np.insert(state, 0, 0.0)
         input_array = self.__uopt_data[frame, :]
-        x_series, y_series = self.__calculate_trajecotry(state, input_array)
+        x_series, y_series = self.__calculate_trajectory(state, input_array)
+        resampled_x_series = self.__resampled_ref_trajectory_x[0, :]
+        resampled_y_series = self.__resampled_ref_trajectory_y[0, :]
         # print(len(input_array))
         self.__reference_trajectory.set_data(x_series, y_series)
 
