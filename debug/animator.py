@@ -18,13 +18,13 @@ class TrajectoryFollowing(object):
             and saves it as a .mp4 files.
     """
 
-    def __init__(self, log_dir):
+    def __init__(self, cgmres_log_dir, trajectory_log_dir):
         """Inits CartPole with loading the simulation results."""
         # Loads the simulation data.
-        self.__log_dir = log_dir
-        self.__t_data = np.genfromtxt(os.path.join(log_dir, "t.log"))
-        self.__x_data = np.genfromtxt(os.path.join(log_dir, "x.log"))
-        self.__uopt_data = np.genfromtxt(os.path.join(log_dir, "uopt.log"))
+        self.__cgmres_log_dir = cgmres_log_dir
+        self.__t_data = np.genfromtxt(os.path.join(cgmres_log_dir, "t.log"))
+        self.__x_data = np.genfromtxt(os.path.join(cgmres_log_dir, "x.log"))
+        self.__uopt_data = np.genfromtxt(os.path.join(cgmres_log_dir, "uopt.log"))
         self.__sampling_time = (self.__t_data[1] - self.__t_data[0]) / 1000
         # Replaces NaN with 0.
         self.__x_data[np.isnan(self.__x_data)] = 0
@@ -77,6 +77,8 @@ class TrajectoryFollowing(object):
             ylim=np.array([self.__y_min, self.__y_max], dtype=float),
         )
 
+        self.__ax.grid(True, linestyle='--', linewidth=0.5, color='gray')
+
         # Create empty plots for ground and cart parts, which will be updated in each frame
         (self.__reference_trajectory,) = self.__ax.plot(
             [], [], color="#0063B1", linewidth=0.5
@@ -99,8 +101,8 @@ class TrajectoryFollowing(object):
             0.85, 0.05, "", transform=self.__ax.transAxes, fontsize=14
         )
 
-        # Create the "plots" folder under self.__log_dir if it doesn't exist
-        plots_dir = os.path.join(self.__log_dir, "plots")
+        # Create the "plots" folder under self.__cgmres_log_dir if it doesn't exist
+        plots_dir = os.path.join(self.__cgmres_log_dir, "plots")
         os.makedirs(plots_dir, exist_ok=True)
 
         # Generate an animation by repeatedly calling __update_animation method
@@ -112,21 +114,21 @@ class TrajectoryFollowing(object):
             blit=True,
         )
 
-        # Save each frame of the animation as a separate plot in the "plots" folder under self.__log_dir
+        # Save each frame of the animation as a separate plot in the "plots" folder under self.__cgmres_log_dir
         for i in range(self.__total_frames):
             self.__update_animation(i)
             self.__fig.savefig(os.path.join(plots_dir, f"frame_{i:04d}.png"))
 
         # Save the generated animation as a .mp4 file
         anime.save(
-            os.path.join(self.__log_dir, "animation.mp4"),
+            os.path.join(self.__cgmres_log_dir, "animation.mp4"),
             writer="ffmpeg",
             fps=int(1 / (self.__sampling_time * self.__skip_frames)),
         )
 
         # Print the location where the animation is saved
         print(
-            "The animation of the simulation results is generated at " + self.__log_dir
+            "The animation of the simulation results is generated at " + self.__cgmres_log_dir
         )
 
     def __calculate_plot_range(self, margin=0.1):
