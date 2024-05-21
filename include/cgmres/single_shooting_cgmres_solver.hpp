@@ -296,6 +296,12 @@ public:
   static constexpr int getN() { return N; }
 
   ///
+  /// @brief Getter of the gmres iteration number.
+  /// @return const reference to the number of GMRES iterations.
+  ///
+  const int gmres_iter() const { return gmres_iter_; }
+
+  ///
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
@@ -348,6 +354,7 @@ public:
     if (settings_.verbose_level >= 2) {
       std::cout << "number of GMRES iter: " << gmres_iter << " (kmax: " << kmax << ")" << std::endl;
     }
+    gmres_iter_ = gmres_iter;
   }
 
   ///
@@ -385,6 +392,7 @@ private:
   std::array<Vector<nuc>, N> ucopt_;
   std::array<Vector<nub>, N> dummyopt_;
   std::array<Vector<nub>, N> muopt_;
+  int gmres_iter_;
 
   Vector<dim> solution_, solution_update_; 
 

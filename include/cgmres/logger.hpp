@@ -59,6 +59,7 @@ explicit Logger(const std::string& log_dir) {
     std::string u_log_name = directory + "/u.log";
     std::string uopt_log_name = directory + "/uopt.log";
     std::string opterr_log_name = directory + "/opterr.log";
+    std::string iter_log_name = directory + "/iter.log";
 
     // Open log files
     t_log_.open(t_log_name);
@@ -66,6 +67,7 @@ explicit Logger(const std::string& log_dir) {
     u_log_.open(u_log_name);
     uopt_log_.open(uopt_log_name);
     opterr_log_.open(opterr_log_name);
+    iter_log_.open(iter_log_name);
 }
 
   ///
@@ -77,6 +79,7 @@ explicit Logger(const std::string& log_dir) {
     u_log_.close();
     uopt_log_.close();
     opterr_log_.close();
+    iter_log_.close();
   }
 
   ///
@@ -87,10 +90,11 @@ explicit Logger(const std::string& log_dir) {
   /// @param[in] opterr Optimality error.
   ///
   template <typename StateVectorType, typename ControlInputVectorType, std::size_t N>
-  void save(const Scalar t, const MatrixBase<StateVectorType>& x,
-            const MatrixBase<ControlInputVectorType >& u,
-            const std::array<ControlInputVectorType, N> &uopt,
-            const double opterr) {
+  void save(
+    const Scalar t, const MatrixBase<StateVectorType> & x,
+    const MatrixBase<ControlInputVectorType> & u,
+    const std::array<ControlInputVectorType, N> & uopt, const double opterr, const int iter)
+  {
     t_log_ << t << '\n';
     x_log_ << x.transpose() << '\n';
     u_log_ << u.transpose() << '\n';
@@ -103,6 +107,7 @@ explicit Logger(const std::string& log_dir) {
     }
     uopt_log_ << '\n';
     opterr_log_ << opterr << '\n';
+    iter_log_ << iter << '\n';
   }
 
   ///
@@ -117,7 +122,7 @@ explicit Logger(const std::string& log_dir) {
 
 private:
   std::string log_name_;
-  std::ofstream t_log_, x_log_, u_log_, uopt_log_, opterr_log_;
+  std::ofstream t_log_, x_log_, u_log_, uopt_log_, opterr_log_, iter_log_;
 };
 
 } // namespace cgmres
