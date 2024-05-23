@@ -48,7 +48,7 @@ public:
     ocp_.eval_hu(t, x0.derived().data(), solution.template head<nuc>().data(), lmd[1].data(), 
                  fonc_hu.template head<nuc>().data());
     for (size_t i=1; i<N; ++i) {
-      ocp_.eval_hu(t+i*dt, x[i].data(), solution.template segment<nuc>(nuc*i).data(),
+      ocp_.eval_hu(t+i*dt, i, x[i].data(), solution.template segment<nuc>(nuc*i).data(),
                    lmd[i+1].data(), fonc_hu.template segment<nuc>(nuc*i).data());
     }
   }

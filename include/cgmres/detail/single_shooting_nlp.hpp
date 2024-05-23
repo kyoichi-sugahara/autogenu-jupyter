@@ -67,7 +67,7 @@ public:
                  fonc_hu.template head<nuc>().data());
     for (size_t i=1; i<N; ++i) {
       const int inucb2 = i * (nuc + 2 * nub);
-      ocp_.eval_hu(t+i*dt, x_[i].data(), solution.template segment<nuc>(inucb2).data(),
+      ocp_.eval_hu(t+i*dt, i, x_[i].data(), solution.template segment<nuc>(inucb2).data(),
                    lmd_[i+1].data(), fonc_hu.template segment<nuc>(inucb2).data());
     }
     if constexpr (nub > 0) {
