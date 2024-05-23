@@ -67,7 +67,6 @@ def main(
     if show_animation:
         anim.generate_animation()
 
-    if show_images:
         plots_dir = os.path.join(latest_cgmres_directory, "plots")
         image_files = sorted([f for f in os.listdir(plots_dir) if f.endswith(".png")])
         first_index = 0
@@ -113,13 +112,7 @@ if __name__ == "__main__":
         "--animation",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Generate animation.",
-    )
-    parser.add_argument(
-        "--images",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Show image plots.",
+        help="Generate animation and images.",
     )
     parser.add_argument(
         "--trajectory",
@@ -132,6 +125,5 @@ if __name__ == "__main__":
     main(
         show_plotter=args.plotter,
         show_animation=args.animation,
-        show_images=args.images,
         show_trajectory=args.trajectory,
     )
