@@ -85,14 +85,14 @@ class Plotter(object):
     def show(self):
         """ Show the graphs of the simulation results. """
         self.__plot()
-        plt.show()
+        plt.show(block=False)
 
     def save(self):
         """ Save the graphs of the simulation results. """
         self.__plot()
         log_file = os.path.join(self.__log_dir, 'result.pdf')
         plt.savefig(log_file, bbox_inches="tight", pad_inches=0.1)
-        print('The graph of the simlation results is generated at ' + log_file)
+        print('The graph of the simulation results is generated at ' + log_file)
 
     def __plot(self):
         """ Plots the simulation results in figure object. """

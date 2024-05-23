@@ -344,6 +344,13 @@ public:
               continuation_gmres_, t, x.derived(), solution_, solution_update_);
     const auto opt_error = continuation_gmres_.optError();
     solution_.noalias() += settings_.sampling_time * solution_update_;
+    // solution_.noalias() += (settings_.sampling_time*2.5) * solution_update_;
+
+    // for (size_t i = 0; i < dim; i++)
+    // {
+    //   std::cerr << "solution_[" << i << "] = " << solution_[i] << std::endl;
+    //   std::cerr << "solution_update_[" << i << "] = " << solution_update_[i] << std::endl;
+    // }
     retrieveSolution();
     if (settings_.profile_solver) timer_.tock();
 

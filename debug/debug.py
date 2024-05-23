@@ -1,0 +1,93 @@
+import os
+import sys
+import matplotlib.pyplot as plt
+import numpy as np
+from plotter import Plotter
+import importlib
+import animator
+from animator import TrajectoryFollowing
+from directory_finder import DirectoryFinder
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+relative_path = os.path.join(script_dir, "../../mpc_lateral_controller/debug")
+absolute_path = os.path.abspath(relative_path)
+if os.path.exists(absolute_path):
+    sys.path.append(absolute_path)
+else:
+    print(f"The path {absolute_path} does not exist.")
+
+import visualize_path
+from visualize_path import plot_trajectory
+
+
+def main():
+    home_directory = os.path.expanduser("~")
+    cgmres_directory_path = os.path.join(home_directory, ".ros/log")
+
+    directory_finder = DirectoryFinder(cgmres_directory_path)
+
+    latest_cgmres_directory = directory_finder.find_latest_directory(
+        prefix="cgmres_debug_"
+    )
+    latest_trajectory_directory = directory_finder.find_latest_directory(
+        prefix="trajectory_"
+    )
+
+    cgmres_creation_time = directory_finder.get_directory_creation_time(
+        latest_cgmres_directory
+    )
+    trajectory_creation_time = directory_finder.get_directory_creation_time(
+        latest_trajectory_directory
+    )
+
+    print(f"The latest cgmres debug directory is: {latest_cgmres_directory}")
+    print(f"The latest cgmres debug directory was created at: {cgmres_creation_time}")
+    print(f"The latest trajectory directory is: {latest_trajectory_directory}")
+    print(f"The latest trajectory directory was created at: {trajectory_creation_time}")
+
+    plotter = Plotter(log_dir=latest_cgmres_directory)
+    plotter.set_scales(2, 5, 2)
+    plotter.show()
+    # plotter.save()
+    plt.draw()
+    plt.pause(1)
+
+    anim = TrajectoryFollowing(
+        cgmres_log_dir=latest_cgmres_directory,
+        trajectory_log_dir=latest_trajectory_directory,
+    )
+    # anim.set_skip_frames(10)
+    anim.generate_animation()
+
+    plots_dir = os.path.join(latest_cgmres_directory, "plots")
+    image_files = sorted([f for f in os.listdir(plots_dir) if f.endswith(".png")])
+    first_index = 0
+    last_index = len(image_files) - 1
+    num_images = 10
+    indices = np.linspace(first_index, last_index, num_images, dtype=int)
+    selected_images = [image_files[i] for i in indices]
+
+    fig, axes = plt.subplots(5, 2, figsize=(10, 20))
+    axes = axes.ravel()
+    for i, image_file in enumerate(selected_images):
+        img = plt.imread(os.path.join(plots_dir, image_file))
+        axes[i].imshow(img)
+        axes[i].axis("off")
+        axes[i].set_title(f"Frame {os.path.splitext(image_file)[0][6:]}")
+
+    plt.tight_layout()
+    plt.draw()
+    plt.pause(1)
+
+    plot_trajectory()
+    plt.draw()
+    plt.pause(1)
+
+    plt.show(block=False)
+
+    input("Press Enter to continue and close plots...")
+
+
+if __name__ == "__main__":
+    main()
