@@ -51,14 +51,14 @@ public:
     x_[1] = x_[0] + dt * dx_;
     for (size_t i=1; i<N; ++i) {
       const int inucb2 = i * (nuc + 2 * nub);
-      ocp_.eval_f(t+i*dt, x_[i].data(), solution.template segment<nuc>(inucb2).data(), dx_.data());
+      ocp_.eval_f(t+i*dt, i, x_[i].data(), solution.template segment<nuc>(inucb2).data(), dx_.data());
       x_[i+1] = x_[i] + dt * dx_;
     }
     // Compute the Lagrange multiplier over the horizon  
     ocp_.eval_phix(t+T, x_[N].data(), lmd_[N].data());
     for (size_t i=N-1; i>=1; --i) {
       const int inucb2 = i * (nuc + 2 * nub);
-      ocp_.eval_hx(t+i*dt, x_[i].data(), solution.template segment<nuc>(inucb2).data(),
+      ocp_.eval_hx(t+i*dt, i, x_[i].data(), solution.template segment<nuc>(inucb2).data(),
                    lmd_[i+1].data(), dx_.data());
       lmd_[i] = lmd_[i+1] + dt * dx_;
     }

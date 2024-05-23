@@ -64,7 +64,7 @@ public:
     ocp_.eval_f(t, x0.derived().data(), solution.template head<nuc>().data(), dx_.data());
     fonc_f[0] = x[1] - x0 - dt * dx_;
     for (size_t i=1; i<N; ++i) {
-      ocp_.eval_f(t+i*dt, x[i].data(), solution.template segment<nuc>(nuc*i).data(), dx_.data());
+      ocp_.eval_f(t+i*dt, i, x[i].data(), solution.template segment<nuc>(nuc*i).data(), dx_.data());
       fonc_f[i] = x[i+1] - x[i] - dt * dx_;
     }
   }
@@ -80,7 +80,7 @@ public:
     ocp_.eval_f(t, x0.derived().data(), solution.template head<nuc>().data(), dx_.data());
     x[1] = x0 + dt * dx_  + fonc_f[0];
     for (size_t i=1; i<N; ++i) {
-      ocp_.eval_f(t+i*dt, x[i].data(), solution.template segment<nuc>(nuc*i).data(), dx_.data());
+      ocp_.eval_f(t+i*dt, i, x[i].data(), solution.template segment<nuc>(nuc*i).data(), dx_.data());
       x[i+1] = x[i] + dt * dx_ + fonc_f[i];
     }
   }
@@ -96,7 +96,7 @@ public:
     ocp_.eval_phix(t+T, x[N].data(), dx_.data());
     fonc_hx[N] = lmd[N] - dx_;
     for (size_t i=N-1; i>=1; --i) {
-      ocp_.eval_hx(t+i*dt, x[i].data(), solution.template segment<nuc>(nuc*i).data(), 
+      ocp_.eval_hx(t+i*dt, i, x[i].data(), solution.template segment<nuc>(nuc*i).data(), 
                    lmd[i+1].data(), dx_.data());
       fonc_hx[i] = lmd[i] - lmd[i+1] - dt * dx_;
     }
@@ -113,7 +113,7 @@ public:
     ocp_.eval_phix(t+T, x[N].data(), dx_.data());
     lmd[N] = dx_ + fonc_hx[N];
     for (size_t i=N-1; i>=1; --i) {
-      ocp_.eval_hx(t+i*dt, x[i].data(), solution.template segment<nuc>(nuc*i).data(), 
+      ocp_.eval_hx(t+i*dt, i, x[i].data(), solution.template segment<nuc>(nuc*i).data(), 
                    lmd[i+1].data(), dx_.data());
       lmd[i] = lmd[i+1] + dt * dx_ + fonc_hx[i];
     }
