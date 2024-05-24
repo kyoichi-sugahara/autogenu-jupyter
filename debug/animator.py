@@ -28,12 +28,12 @@ class TrajectoryFollowing(object):
         self.__uopt_data = np.genfromtxt(os.path.join(cgmres_log_dir, "uopt.log"))
         self.__sampling_time = (self.__t_data[1] - self.__t_data[0]) / 1000
         data = []
-        with open(os.path.join(trajectory_log_dir, "resampled_x.log"), "r") as file:
+        with open(os.path.join(trajectory_log_dir, "resampled_ref_x.log"), "r") as file:
             for line in file:
                 data.append(np.fromstring(line.strip(), sep=','))
         self.__resampled_ref_trajectory_x = np.array(data)
         data = []
-        with open(os.path.join(trajectory_log_dir, "resampled_y.log"), "r") as file:
+        with open(os.path.join(trajectory_log_dir, "resampled_ref_y.log"), "r") as file:
             for line in file:
                 data.append(np.fromstring(line.strip(), sep=','))
         self.__resampled_ref_trajectory_y = np.array(data)
