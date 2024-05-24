@@ -178,6 +178,12 @@ public:
   const Vector<nx>& lmdopt() const { return newton_gmres_.lmd(); }
 
   ///
+  /// @brief Getter of the gmres iteration number.
+  /// @return const reference to the number of GMRES iterations.
+  ///
+  const int gmres_iter() const { return gmres_iter_; }
+
+  ///
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
@@ -219,6 +225,7 @@ public:
       const auto gmres_iter 
           = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
                 newton_gmres_, t, x.derived(), solution_, solution_update_);
+      gmres_iter_ = gmres_iter;
       const auto opt_error = newton_gmres_.optError();
       solution_.noalias() += solution_update_;
       if (settings_.profile_solver) timer_.tock();
@@ -276,6 +283,7 @@ private:
   Vector<nu> uopt_;
   Vector<nuc> ucopt_;
   Vector<nub> dummyopt_, muopt_;
+  int gmres_iter_;
 
   Vector<dim> solution_, solution_update_; 
 
