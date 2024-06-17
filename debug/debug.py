@@ -11,13 +11,6 @@ from directory_finder import DirectoryFinder
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-relative_path = os.path.join(script_dir, "../../autoware_mpc_lateral_controller/debug")
-absolute_path = os.path.abspath(relative_path)
-if os.path.exists(absolute_path):
-    sys.path.append(absolute_path)
-else:
-    print(f"The path {absolute_path} does not exist.")
-
 import visualize_path
 from visualize_path import plot_trajectory
 
