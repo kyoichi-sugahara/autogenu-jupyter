@@ -81,7 +81,7 @@ def main(
         plt.pause(1)
 
     if show_trajectory:
-        plot_trajectory()
+        plot_trajectory(latest_trajectory_directory, cgmres_creation_time)
         plt.draw()
         plt.pause(1)
 

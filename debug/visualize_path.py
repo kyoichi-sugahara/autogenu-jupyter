@@ -41,7 +41,7 @@ def find_latest_directory(log_directory):
     return None
 
 
-def plot_trajectory(data_directory=None):
+def plot_trajectory(data_directory=None, creation_time=None):
     if data_directory is None:
         home_directory = os.path.expanduser("~")
         log_directory = os.path.join(home_directory, ".ros", "log")
@@ -56,26 +56,39 @@ def plot_trajectory(data_directory=None):
     resampled_ref_data = read_csv(data_directory, "resampled_ref_x.log")
     predicted_data = read_csv(data_directory, "predicted_x.log")
     predicted_frenet_data = read_csv(data_directory, "predicted_frenet_x.log")
-    cgmres_predicted_frenet_data = read_csv(data_directory, "cgmres_predicted_frenet_x.log")
+    cgmres_predicted_frenet_data = read_csv(
+        data_directory, "cgmres_predicted_frenet_x.log"
+    )
     cgmres_predicted_data = read_csv(data_directory, "cgmres_predicted_x.log")
     time_data = read_csv(data_directory, "time.log")
 
     fig, ax = plt.subplots(figsize=(8, 6))
     plt.subplots_adjust(bottom=0.2)
 
-    (original_ref_plot,) = ax.plot([], [], marker="o", label="Original Reference Trajectory")
-    (resampled_ref_plot,) = ax.plot([], [], marker="s", label="Resampled Reference Trajectory")
+    (original_ref_plot,) = ax.plot(
+        [], [], marker="o", label="Original Reference Trajectory"
+    )
+    (resampled_ref_plot,) = ax.plot(
+        [], [], marker="s", label="Resampled Reference Trajectory"
+    )
     (predicted_plot,) = ax.plot([], [], marker="d", label="Predicted Trajectory")
-    (predicted_frenet_plot,) = ax.plot([], [], marker="^", label="Predicted Frenet Trajectory")
+    (predicted_frenet_plot,) = ax.plot(
+        [], [], marker="^", label="Predicted Frenet Trajectory"
+    )
     (cgmres_predicted_frenet_plot,) = ax.plot(
         [], [], marker="v", label="CGMRES Predicted Frenet Trajectory"
     )
-    (cgmres_predicted_plot,) = ax.plot([], [], marker="<", label="CGMRES Predicted Trajectory")
+    (cgmres_predicted_plot,) = ax.plot(
+        [], [], marker="<", label="CGMRES Predicted Trajectory"
+    )
 
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    directory_name = os.path.basename(data_directory)
-    ax.set_title(f"Trajectory Comparison\n{directory_name}")
+    if creation_time is None:
+        directory_name = os.path.basename(data_directory)
+        ax.set_title(f"Trajectory Comparison\n{directory_name}")
+    else:
+        ax.set_title(f"Trajectory Comparison\n{creation_time}")
     ax.legend()
     ax.grid(True)
     plt.gca().set_aspect("equal", adjustable="box")
@@ -91,19 +104,25 @@ def plot_trajectory(data_directory=None):
         predicted_x = predicted_data[time_index]
         predicted_y = read_csv(data_directory, "predicted_y.log")[time_index]
         predicted_frenet_x = predicted_frenet_data[time_index]
-        predicted_frenet_y = read_csv(data_directory, "predicted_frenet_y.log")[time_index]
-        cgmres_predicted_frenet_x = cgmres_predicted_frenet_data[time_index]
-        cgmres_predicted_frenet_y = read_csv(data_directory, "cgmres_predicted_frenet_y.log")[
+        predicted_frenet_y = read_csv(data_directory, "predicted_frenet_y.log")[
             time_index
         ]
+        cgmres_predicted_frenet_x = cgmres_predicted_frenet_data[time_index]
+        cgmres_predicted_frenet_y = read_csv(
+            data_directory, "cgmres_predicted_frenet_y.log"
+        )[time_index]
         cgmres_predicted_x = cgmres_predicted_data[time_index]
-        cgmres_predicted_y = read_csv(data_directory, "cgmres_predicted_y.log")[time_index]
+        cgmres_predicted_y = read_csv(data_directory, "cgmres_predicted_y.log")[
+            time_index
+        ]
 
         original_ref_plot.set_data(original_ref_x, original_ref_y)
         resampled_ref_plot.set_data(resampled_ref_x, resampled_ref_y)
         predicted_plot.set_data(predicted_x, predicted_y)
         predicted_frenet_plot.set_data(predicted_frenet_x, predicted_frenet_y)
-        cgmres_predicted_frenet_plot.set_data(cgmres_predicted_frenet_x, cgmres_predicted_frenet_y)
+        cgmres_predicted_frenet_plot.set_data(
+            cgmres_predicted_frenet_x, cgmres_predicted_frenet_y
+        )
         cgmres_predicted_plot.set_data(cgmres_predicted_x, cgmres_predicted_y)
 
         ax.relim()
@@ -117,10 +136,15 @@ def plot_trajectory(data_directory=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot trajectory data from CSV files.")
-    parser.add_argument("--directory", type=str, help="Directory containing the CSV files")
+    parser.add_argument(
+        "--directory", type=str, help="Directory containing the CSV files"
+    )
+    parser.add_argument(
+        "--directory-creation-time", type=str, help="Creation time of the directory"
+    )
     args = parser.parse_args()
 
     if args.directory:
-        plot_trajectory(args.directory)
+        plot_trajectory(args.directory, args.directory_creation_time)
     else:
         plot_trajectory()
