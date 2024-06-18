@@ -94,7 +94,7 @@ def plot_trajectory(data_directory=None, creation_time=None):
     plt.gca().set_aspect("equal", adjustable="box")
 
     slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
-    time_slider = Slider(slider_ax, "Time", 0, len(time_data) - 1, valinit=0, valstep=1)
+    time_slider = Slider(slider_ax, "Time", 0, max(1, len(time_data) - 1), valinit=0, valstep=1)
 
     def update(time_index):
         original_ref_x = original_ref_data[time_index]

@@ -36,23 +36,23 @@ def extract_calculation_times(log_file_path):
     with open(log_file_path, "r") as file:
         log_data = file.read()
 
-    osqp_pattern = r"\[controller\.lateral_controller\]: executeOptimization time = (\d+) \[ns\]"
+    osqp_pattern = r"\[controller\.lateral_controller\]: executeOptimization time = ([\d\.]+) \[ms\]"
     cgmres_pattern = (
-        r"\[controller\.lateral_controller\]: executeOptimization \(cgmres\) time = (\d+) \[ns\]"
+        r"\[controller\.lateral_controller\]: executeOptimization \(cgmres\) time = ([\d\.]+) \[ms\]"
     )
     # generate_mpc_matrix_pattern = (
-    #     r"\[controller\.lateral_controller\]: generateMPCMatrix time = (\d+) \[ns\]"
+    #     r"\[controller\.lateral_controller\]: generateMPCMatrix time = ([\d\.]+) \[ms\]"
     # )
 
     osqp_times = re.findall(osqp_pattern, log_data)
     cgmres_times = re.findall(cgmres_pattern, log_data)
     # generate_mpc_matrix_times = re.findall(generate_mpc_matrix_pattern, log_data)
 
-    osqp_times = [int(time) / 1000000 for time in osqp_times]  # Convert nsec to msec
-    cgmres_times = [int(time) / 1000000 for time in cgmres_times]  # Convert nsec to msec
+    osqp_times = [float(time) for time in osqp_times]
+    cgmres_times = [float(time) for time in cgmres_times]
     # generate_mpc_matrix_times = [
-    #     int(time) / 1000000 for time in generate_mpc_matrix_times
-    # ]  # Convert nsec to msec
+    #     float(time) for time in generate_mpc_matrix_times
+    # ]
 
     return osqp_times, cgmres_times
     # return osqp_times, cgmres_times, generate_mpc_matrix_times
