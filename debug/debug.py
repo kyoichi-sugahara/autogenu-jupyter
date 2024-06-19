@@ -22,6 +22,7 @@ def main(
     show_images=True,
     show_trajectory=True,
     show_solution=True,
+    trajectories=None,
 ):
     home_directory = os.path.expanduser("~")
     cgmres_directory_path = os.path.join(home_directory, ".ros/log")
@@ -86,7 +87,7 @@ def main(
         plt.pause(1)
 
     if show_trajectory:
-        plot_trajectory(latest_trajectory_directory, cgmres_creation_time)
+        plot_trajectory(latest_trajectory_directory, trajectory_creation_time, trajectories)
         plt.draw()
         plt.pause(1)
 
@@ -129,6 +130,11 @@ if __name__ == "__main__":
         default=True,
         help="Show solution plots.",
     )
+    parser.add_argument(
+        "--trajectories",
+        nargs="+",
+        help="List of trajectories to plot (options: original_ref, resampled_ref, predicted, predicted_frenet, cgmres_predicted_frenet, cgmres_predicted)",
+    )
     args = parser.parse_args()
 
     main(
@@ -136,4 +142,5 @@ if __name__ == "__main__":
         show_animation=args.animation,
         show_trajectory=args.trajectory,
         show_solution=args.solution,
+        trajectories=args.trajectories,
     )

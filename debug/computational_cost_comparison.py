@@ -68,7 +68,8 @@ def plot_calculation_times(osqp_times, cgmres_times, log_file_name):
     # )
     plt.xlabel("Iteration")
     plt.ylabel("Calculation Time [ms]")  # Change the unit to msec
-    plt.title(f"OSQP vs CGMRES vs generateMPCMatrix Calculation Time\nLog File: {log_file_name}")
+    # plt.title(f"OSQP vs CGMRES vs generateMPCMatrix Calculation Time\nLog File: {log_file_name}")
+    plt.title(f"OSQP vs CGMRES Calculation Time\nLog File: {log_file_name}")
     plt.legend()
     plt.grid(True)
     plt.show()
