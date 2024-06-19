@@ -64,29 +64,39 @@ def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
     if trajectories is None:
         trajectories = available_trajectories.keys()
 
-    fig, ax = plt.subplots(figsize=(8, 6))
-    plt.subplots_adjust(bottom=0.2)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 10))
+    plt.subplots_adjust(bottom=0.2, hspace=0.5)
 
     plots = {}
     for traj in trajectories:
         if traj in available_trajectories:
             data = available_trajectories[traj]
-            plots[traj] = ax.plot([], [], marker=data["marker"], label=data["label"])[0]
+            plots[traj] = ax1.plot([], [], marker=data["marker"], label=data["label"])[0]
 
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
+    ax1.set_xlabel("X")
+    ax1.set_ylabel("Y")
     if creation_time is None:
         directory_name = os.path.basename(data_directory)
-        ax.set_title(f"Trajectory Comparison\n{directory_name}")
+        ax1.set_title(f"Trajectory Comparison\n{directory_name}")
     else:
-        ax.set_title(f"Trajectory Comparison\n{creation_time}")
-    ax.legend()
-    ax.grid(True)
-    plt.gca().set_aspect("equal", adjustable="box")
+        ax1.set_title(f"Trajectory Comparison\n{creation_time}")
+    ax1.legend()
+    ax1.grid(True)
+    ax1.set_aspect("equal", adjustable="box")
+
+    ax2.set_xlabel("Point Index")
+    ax2.set_ylabel("Curvature")
+    ax2.set_title("Curvature over Time")
+    ax2.grid(True)
 
     time_data = read_csv(data_directory, "time.log")
+    curvature_data = read_csv(data_directory, "resampled_k.log")
+
     slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
     time_slider = Slider(slider_ax, "Time", 0, max(1, len(time_data) - 1), valinit=0, valstep=1)
+
+    curvature_line, = ax2.plot([], [], color="red", label="Curvature")
+    ax2.legend()
 
     def update(time_index):
         for traj in trajectories:
@@ -96,8 +106,12 @@ def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
                 y_data = read_csv(data_directory, data["y"])[time_index]
                 plots[traj].set_data(x_data, y_data)
 
-        ax.relim()
-        ax.autoscale_view()
+        curvature_line.set_data(range(len(curvature_data[time_index])), curvature_data[time_index])
+
+        ax1.relim()
+        ax1.autoscale_view()
+        ax2.relim()
+        ax2.autoscale_view()
         fig.canvas.draw_idle()
 
     time_slider.on_changed(update)
