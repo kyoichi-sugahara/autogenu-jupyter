@@ -41,7 +41,7 @@ def find_latest_directory(log_directory):
     return None
 
 
-def plot_trajectory(data_directory=None, creation_time=None):
+def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
     if data_directory is None:
         home_directory = os.path.expanduser("~")
         log_directory = os.path.join(home_directory, ".ros", "log")
@@ -52,35 +52,26 @@ def plot_trajectory(data_directory=None, creation_time=None):
             print("No trajectory directory found.")
             return
 
-    original_ref_data = read_csv(data_directory, "original_ref_x.log")
-    resampled_ref_data = read_csv(data_directory, "resampled_ref_x.log")
-    predicted_data = read_csv(data_directory, "predicted_x.log")
-    predicted_frenet_data = read_csv(data_directory, "predicted_frenet_x.log")
-    cgmres_predicted_frenet_data = read_csv(
-        data_directory, "cgmres_predicted_frenet_x.log"
-    )
-    cgmres_predicted_data = read_csv(data_directory, "cgmres_predicted_x.log")
-    time_data = read_csv(data_directory, "time.log")
+    available_trajectories = {
+        "original_ref": {"x": "original_ref_x.log", "y": "original_ref_y.log", "label": "Original Reference Trajectory", "marker": "o"},
+        "resampled_ref": {"x": "resampled_ref_x.log", "y": "resampled_ref_y.log", "label": "Resampled Reference Trajectory", "marker": "s"},
+        "predicted": {"x": "predicted_x.log", "y": "predicted_y.log", "label": "Predicted Trajectory", "marker": "d"},
+        "predicted_frenet": {"x": "predicted_frenet_x.log", "y": "predicted_frenet_y.log", "label": "Predicted Frenet Trajectory", "marker": "^"},
+        "cgmres_predicted_frenet": {"x": "cgmres_predicted_frenet_x.log", "y": "cgmres_predicted_frenet_y.log", "label": "CGMRES Predicted Frenet Trajectory", "marker": "v"},
+        "cgmres_predicted": {"x": "cgmres_predicted_x.log", "y": "cgmres_predicted_y.log", "label": "CGMRES Predicted Trajectory", "marker": "<"},
+    }
+
+    if trajectories is None:
+        trajectories = available_trajectories.keys()
 
     fig, ax = plt.subplots(figsize=(8, 6))
     plt.subplots_adjust(bottom=0.2)
 
-    (original_ref_plot,) = ax.plot(
-        [], [], marker="o", label="Original Reference Trajectory"
-    )
-    (resampled_ref_plot,) = ax.plot(
-        [], [], marker="s", label="Resampled Reference Trajectory"
-    )
-    (predicted_plot,) = ax.plot([], [], marker="d", label="Predicted Trajectory")
-    (predicted_frenet_plot,) = ax.plot(
-        [], [], marker="^", label="Predicted Frenet Trajectory"
-    )
-    (cgmres_predicted_frenet_plot,) = ax.plot(
-        [], [], marker="v", label="CGMRES Predicted Frenet Trajectory"
-    )
-    (cgmres_predicted_plot,) = ax.plot(
-        [], [], marker="<", label="CGMRES Predicted Trajectory"
-    )
+    plots = {}
+    for traj in trajectories:
+        if traj in available_trajectories:
+            data = available_trajectories[traj]
+            plots[traj] = ax.plot([], [], marker=data["marker"], label=data["label"])[0]
 
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
@@ -93,37 +84,17 @@ def plot_trajectory(data_directory=None, creation_time=None):
     ax.grid(True)
     plt.gca().set_aspect("equal", adjustable="box")
 
+    time_data = read_csv(data_directory, "time.log")
     slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
     time_slider = Slider(slider_ax, "Time", 0, max(1, len(time_data) - 1), valinit=0, valstep=1)
 
     def update(time_index):
-        original_ref_x = original_ref_data[time_index]
-        original_ref_y = read_csv(data_directory, "original_ref_y.log")[time_index]
-        resampled_ref_x = resampled_ref_data[time_index]
-        resampled_ref_y = read_csv(data_directory, "resampled_ref_y.log")[time_index]
-        predicted_x = predicted_data[time_index]
-        predicted_y = read_csv(data_directory, "predicted_y.log")[time_index]
-        predicted_frenet_x = predicted_frenet_data[time_index]
-        predicted_frenet_y = read_csv(data_directory, "predicted_frenet_y.log")[
-            time_index
-        ]
-        cgmres_predicted_frenet_x = cgmres_predicted_frenet_data[time_index]
-        cgmres_predicted_frenet_y = read_csv(
-            data_directory, "cgmres_predicted_frenet_y.log"
-        )[time_index]
-        cgmres_predicted_x = cgmres_predicted_data[time_index]
-        cgmres_predicted_y = read_csv(data_directory, "cgmres_predicted_y.log")[
-            time_index
-        ]
-
-        original_ref_plot.set_data(original_ref_x, original_ref_y)
-        resampled_ref_plot.set_data(resampled_ref_x, resampled_ref_y)
-        predicted_plot.set_data(predicted_x, predicted_y)
-        predicted_frenet_plot.set_data(predicted_frenet_x, predicted_frenet_y)
-        cgmres_predicted_frenet_plot.set_data(
-            cgmres_predicted_frenet_x, cgmres_predicted_frenet_y
-        )
-        cgmres_predicted_plot.set_data(cgmres_predicted_x, cgmres_predicted_y)
+        for traj in trajectories:
+            if traj in available_trajectories:
+                data = available_trajectories[traj]
+                x_data = read_csv(data_directory, data["x"])[time_index]
+                y_data = read_csv(data_directory, data["y"])[time_index]
+                plots[traj].set_data(x_data, y_data)
 
         ax.relim()
         ax.autoscale_view()
@@ -133,18 +104,11 @@ def plot_trajectory(data_directory=None, creation_time=None):
     update(0)
     plt.show()
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot trajectory data from CSV files.")
-    parser.add_argument(
-        "--directory", type=str, help="Directory containing the CSV files"
-    )
-    parser.add_argument(
-        "--directory-creation-time", type=str, help="Creation time of the directory"
-    )
+    parser.add_argument("--directory", type=str, help="Directory containing the CSV files")
+    parser.add_argument("--directory-creation-time", type=str, help="Creation time of the directory")
+    parser.add_argument("--trajectories", nargs='+', help="List of trajectories to plot (options: original_ref, resampled_ref, predicted, predicted_frenet, cgmres_predicted_frenet, cgmres_predicted)")
     args = parser.parse_args()
 
-    if args.directory:
-        plot_trajectory(args.directory, args.directory_creation_time)
-    else:
-        plot_trajectory()
+    plot_trajectory(args.directory, args.directory_creation_time, args.trajectories)
