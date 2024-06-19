@@ -29,7 +29,7 @@ def read_csv(directory, filename):
     return [[float(x) for x in line.split()] for line in data if line.strip()]
 
 
-def plot_solution(data_directory, creation_time):
+def plot_solution(data_directory, creation_time, fixed_scale=True):
 
     optimized_u_array = read_csv(data_directory, "uopt.log")
     initial_solution_array = read_csv(data_directory, "initial_solution.log")
@@ -49,8 +49,12 @@ def plot_solution(data_directory, creation_time):
     min_right_y = min(min(all_initial_y_data), min(all_updated_y_data))
     max_right_y = max(max(all_initial_y_data), max(all_updated_y_data))
     right_y_margin = (max_right_y - min_right_y) * 0.1
-    min_right_y_with_margin = min_right_y - right_y_margin
-    max_right_y_with_margin = max_right_y + right_y_margin
+    if fixed_scale:
+        min_right_y_with_margin = min_right_y - right_y_margin
+        max_right_y_with_margin = max_right_y + right_y_margin
+    else:
+        min_right_y_with_margin = None
+        max_right_y_with_margin = None
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
     plt.subplots_adjust(bottom=0.2)
@@ -93,6 +97,12 @@ def plot_solution(data_directory, creation_time):
         initial_solution_plot.set_data(x_data, y_data_init)
         updated_solution_plot.set_data(x_data, y_data_updated)
 
+        if not fixed_scale:
+            min_right_y = min(min(row_init), min(row_updated))
+            max_right_y = max(max(row_init), max(row_updated))
+            right_y_margin = (max_right_y - min_right_y) * 0.1
+            ax2.set_ylim(min_right_y - right_y_margin, max_right_y + right_y_margin)
+
         fig.canvas.draw_idle()
 
     time_slider.on_changed(update)
@@ -107,6 +117,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--directory-creation-time", type=str, help="Creation time of the directory"
+    )
+    parser.add_argument(
+        "--fixed-scale",
+        action="store_true",
+        help="Fix the scale of the right plot to the first time step",
     )
     args = parser.parse_args()
 

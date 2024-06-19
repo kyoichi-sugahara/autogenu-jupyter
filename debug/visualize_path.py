@@ -123,14 +123,14 @@ def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
     ax1_span.grid(True)
     ax1_span.set_aspect("equal", adjustable="box")
 
-    ax2.set_xlabel("Point Index")
+    ax2.set_xlabel("Trajectory Index")
     ax2.set_ylabel("Curvature")
-    ax2.set_title("Curvature over Time")
+    ax2.set_title("Curvature over trajectory index")
     ax2.grid(True)
 
-    ax3.set_xlabel("Point Index")
+    ax3.set_xlabel("Trajectory Index")
     ax3.set_ylabel("Velocity")
-    ax3.set_title("Velocity over Time")
+    ax3.set_title("Velocity over trajectory index")
     ax3.grid(True)
 
     time_data = read_csv(data_directory, "time.log")

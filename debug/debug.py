@@ -91,7 +91,7 @@ def main(
         plt.pause(1)
 
     if show_solution:
-        plot_solution(latest_cgmres_directory, cgmres_creation_time)
+        plot_solution(latest_cgmres_directory, cgmres_creation_time, fixed_scale=False)
         plt.draw()
         plt.pause(1)
 
