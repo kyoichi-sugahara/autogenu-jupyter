@@ -58,6 +58,8 @@ explicit Logger(const std::string& log_dir) {
     std::string x_log_name = directory + "/x.log";
     std::string u_log_name = directory + "/u.log";
     std::string uopt_log_name = directory + "/uopt.log";
+    std::string initial_solution_log_name = directory + "/initial_solution.log";
+    std::string updated_solution_log_name = directory + "/updated_solution.log";
     std::string opterr_log_name = directory + "/opterr.log";
     std::string iter_log_name = directory + "/iter.log";
 
@@ -66,6 +68,8 @@ explicit Logger(const std::string& log_dir) {
     x_log_.open(x_log_name);
     u_log_.open(u_log_name);
     uopt_log_.open(uopt_log_name);
+    initial_solution_log_.open(initial_solution_log_name);
+    updated_solution_log_.open(updated_solution_log_name);
     opterr_log_.open(opterr_log_name);
     iter_log_.open(iter_log_name);
 }
@@ -78,6 +82,8 @@ explicit Logger(const std::string& log_dir) {
     x_log_.close();
     u_log_.close();
     uopt_log_.close();
+    initial_solution_log_.close();
+    updated_solution_log_.close();
     opterr_log_.close();
     iter_log_.close();
   }
@@ -93,7 +99,10 @@ explicit Logger(const std::string& log_dir) {
   void save(
     const Scalar t, const MatrixBase<StateVectorType> & x,
     const MatrixBase<ControlInputVectorType> & u,
-    const std::array<ControlInputVectorType, N> & uopt, const double opterr, const int iter)
+    const std::array<ControlInputVectorType, N> & uopt,
+    const std::array<ControlInputVectorType, N> & initial_solution,
+    const std::array<ControlInputVectorType, N> & updated_solution,
+    const double opterr, const int iter)
   {
     t_log_ << t << '\n';
     x_log_ << x.transpose() << '\n';
@@ -106,6 +115,22 @@ explicit Logger(const std::string& log_dir) {
       }
     }
     uopt_log_ << '\n';
+    for (auto &matrix : initial_solution) {
+      for (int i = 0; i < matrix.rows(); i++) {
+        for (int j = 0; j < matrix.cols(); j++) {
+          initial_solution_log_ << matrix(i, j) << " ";
+        }
+      }
+    }
+    initial_solution_log_ << '\n';
+    for (auto &matrix : updated_solution) {
+      for (int i = 0; i < matrix.rows(); i++) {
+        for (int j = 0; j < matrix.cols(); j++) {
+          updated_solution_log_ << matrix(i, j) << " ";
+        }
+      }
+    }
+    updated_solution_log_ << '\n';
     opterr_log_ << opterr << '\n';
     iter_log_ << iter << '\n';
   }
@@ -122,7 +147,7 @@ explicit Logger(const std::string& log_dir) {
 
 private:
   std::string log_name_;
-  std::ofstream t_log_, x_log_, u_log_, uopt_log_, opterr_log_, iter_log_;
+  std::ofstream t_log_, x_log_, u_log_, uopt_log_, initial_solution_log_, updated_solution_log_, opterr_log_, iter_log_;
 };
 
 } // namespace cgmres

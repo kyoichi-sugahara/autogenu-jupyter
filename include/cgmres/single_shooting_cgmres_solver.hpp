@@ -296,6 +296,18 @@ public:
   static constexpr int getN() { return N; }
 
   ///
+  /// @brief Getter of the initial solution.
+  /// @return const reference to the initial solution.
+  ///
+  const std::array<Vector<nu>, N>& initial_solution() const { return initial_sol_; }
+
+  ///
+  /// @brief Getter of the updated solution.
+  /// @return const reference to the updated solution.
+  ///
+  const std::array<Vector<nu>, N>& updated_solution() const { return updated_sol_; }
+
+  ///
   /// @brief Getter of the gmres iteration number.
   /// @return const reference to the number of GMRES iterations.
   ///
@@ -336,7 +348,7 @@ public:
     if (settings_.verbose_level >= 1) {
       std::cout << "\n======================= update solution with C/GMRES =======================" << std::endl;
     }
-
+    initial_solution_ = solution_update_;
     if (settings_.profile_solver) timer_.tick();
     continuation_gmres_.synchronize_ocp(); 
     const auto gmres_iter 
@@ -344,6 +356,7 @@ public:
               continuation_gmres_, t, x.derived(), solution_, solution_update_);
     const auto opt_error = continuation_gmres_.optError();
     solution_.noalias() += settings_.sampling_time * solution_update_;
+    updated_solution_ = solution_update_;
 
     // for (size_t i = 0; i < dim; i++)
     // {
@@ -395,12 +408,15 @@ private:
   Timer timer_;
 
   std::array<Vector<nu>, N> uopt_;
+  std::array<Vector<nu>, N> initial_sol_;
+  std::array<Vector<nu>, N> updated_sol_;
   std::array<Vector<nuc>, N> ucopt_;
   std::array<Vector<nub>, N> dummyopt_;
   std::array<Vector<nub>, N> muopt_;
   int gmres_iter_;
 
   Vector<dim> solution_, solution_update_; 
+  Vector<dim> initial_solution_, updated_solution_;
 
   void setInnerSolution() {
     for (size_t i=0; i<N; ++i) {
@@ -417,6 +433,8 @@ private:
     for (size_t i=0; i<N; ++i) {
       const int inucb2 = i * (nuc + 2 * nub);
       uopt_[i] = solution_.template segment<nu>(inucb2);
+      initial_sol_[i] = initial_solution_.template segment<nu>(inucb2);
+      updated_sol_[i] = updated_solution_.template segment<nu>(inucb2);
       ucopt_[i] = solution_.template segment<nuc>(inucb2);
       if constexpr (nub > 0) {
         dummyopt_[i] = solution_.template segment<nub>(inucb2+nuc);
