@@ -13,10 +13,15 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 import visualize_path
 from visualize_path import plot_trajectory
+from show_solution import plot_solution
 
 
 def main(
-    show_plotter=True, show_animation=True, show_images=True, show_trajectory=True
+    show_plotter=True,
+    show_animation=True,
+    show_images=True,
+    show_trajectory=True,
+    show_solution=True,
 ):
     home_directory = os.path.expanduser("~")
     cgmres_directory_path = os.path.join(home_directory, ".ros/log")
@@ -85,6 +90,11 @@ def main(
         plt.draw()
         plt.pause(1)
 
+    if show_solution:
+        plot_solution(latest_cgmres_directory, cgmres_creation_time)
+        plt.draw()
+        plt.pause(1)
+
     if show_plotter or show_animation or show_images or show_trajectory:
         plt.show(block=False)
 
@@ -113,10 +123,17 @@ if __name__ == "__main__":
         default=True,
         help="Show trajectory plots.",
     )
+    parser.add_argument(
+        "--solution",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Show solution plots.",
+    )
     args = parser.parse_args()
 
     main(
         show_plotter=args.plotter,
         show_animation=args.animation,
         show_trajectory=args.trajectory,
+        show_solution=args.solution,
     )
