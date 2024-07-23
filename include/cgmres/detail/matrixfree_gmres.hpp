@@ -38,49 +38,70 @@ public:
   int solve(LinearProblem& linear_problem, 
             LinearProblemArgs... linear_problem_args, 
             Vector<dim>& linear_problem_solution) {
-    // Initializes vectors for QR factrization by Givens rotation.
+    // 1. Initialization: Initialize vectors for Givens rotation with zeros
     givens_c_vec_.setZero();
     givens_s_vec_.setZero();
     g_vec_.setZero();
-    // Generates the initial basis of the Krylov subspace.
+    // 2. Generate initial basis for Krylov subspace
     linear_problem.eval_b(linear_problem_args..., linear_problem_solution, b_vec_);
     g_vec_.coeffRef(0) = b_vec_.template lpNorm<2>();
     basis_mat_.col(0) = b_vec_ / g_vec_.coeff(0);
-    // k : the dimension of the Krylov subspace at the current iteration.
+    // 3. Main iteration loop
+    // k: Dimension of Krylov subspace in the current iteration
     int k = 0;
     for (; k<kmax; ++k) {
+      // a. Generate new basis vector: Calculate A * v_k
       linear_problem.eval_Ax(linear_problem_args..., basis_mat_.col(k), 
-                             basis_mat_.col(k+1));
+                            basis_mat_.col(k+1));
+      // b. Arnoldi process (Gram-Schmidt orthogonalization)
       for (int j=0; j<=k; ++j) {
+        // Update Hessenberg matrix element
         hessenberg_mat_.coeffRef(k, j) = basis_mat_.col(k+1).dot(basis_mat_.col(j));
+        // Orthogonalize new vector against existing basis vectors
         basis_mat_.col(k+1).noalias() -= hessenberg_mat_.coeff(k, j) * basis_mat_.col(j);
       }
+      // c. Normalize new basis vector
       hessenberg_mat_.coeffRef(k, k+1) = basis_mat_.col(k+1).template lpNorm<2>();
       if (std::abs(hessenberg_mat_.coeff(k, k+1)) < std::numeric_limits<double>::epsilon()) {
+        // If norm is very small, end the loop
+        // Numerical stability: When the norm of the new basis vector is very small,
+        // it means it's numerically close to zero. This suggests that the Krylov
+        // subspace cannot be expanded further.
+        // Detection of linear dependence: If the norm is very small, it's likely
+        // that the newly generated vector is linearly dependent on the existing
+        // basis vectors. This suggests that either the algorithm has converged
+        // or the problem is not well-conditioned.
         break;
       }
       else {
+        // Normalize the vector
         basis_mat_.col(k+1).array() /= hessenberg_mat_.coeff(k, k+1);
       }
-      // Givens Rotation for QR factrization of the least squares problem.
+      // d. QR decomposition using Givens rotation
+      // This process efficiently solves the least squares problem that arises in each GMRES iteration
       for (int j=0; j<k; ++j) {
+        // Apply Givens rotation to the new row of Hessenberg matrix
         givensRotation(hessenberg_mat_.row(k), j);
       }
+      // Calculate rotation parameters (c, s)
       const Scalar nu = std::sqrt(hessenberg_mat_.coeff(k, k)*hessenberg_mat_.coeff(k, k)
                                   +hessenberg_mat_.coeff(k, k+1)*hessenberg_mat_.coeff(k, k+1));
       if (nu) {
         givens_c_vec_.coeffRef(k) = hessenberg_mat_.coeff(k, k) / nu;
         givens_s_vec_.coeffRef(k) = - hessenberg_mat_.coeff(k, k+1) / nu;
+        // Update Hessenberg matrix
         hessenberg_mat_.coeffRef(k, k) = givens_c_vec_.coeff(k) * hessenberg_mat_.coeff(k, k) 
                                           - givens_s_vec_.coeff(k) * hessenberg_mat_.coeff(k, k+1);
         hessenberg_mat_.coeffRef(k, k+1) = 0.0;
+        // Update right-hand side vector g_vec_
         givensRotation(g_vec_, k);
       }
       else {
         throw std::runtime_error("Lose orthogonality of the basis of the Krylov subspace");
       }
     }
-    // Computes solution_vec by solving hessenberg_mat_ * y = g_vec.
+    // 4. Calculate the solution
+    // a. Solve the transformed upper triangular system by back substitution
     for (int i=k-1; i>=0; --i) {
       Scalar tmp = g_vec_.coeff(i);
       for (int j=i+1; j<k; ++j) {
@@ -88,6 +109,7 @@ public:
       }
       givens_c_vec_.coeffRef(i) = tmp / hessenberg_mat_.coeff(i, i);
     }
+    // b. Calculate the final solution
     for (int i=0; i<dim; ++i) {
       Scalar tmp = 0.0;
       for (int j=0; j<k; ++j) { 
@@ -95,6 +117,7 @@ public:
       }
       linear_problem_solution.coeffRef(i) += tmp;
     }
+    // 5. Return the number of iterations
     return k;
   }
 
