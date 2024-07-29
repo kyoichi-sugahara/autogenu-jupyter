@@ -158,14 +158,15 @@ class TrajectoryFollowing(object):
 
     def __calculate_values(self, x, u):
         """Calculate three values based on the input vectors x and u."""
+        x = [float(str(val).split('(')[-1].split(')')[0]) if isinstance(val, str) else float(val) for val in x]
+        u = [float(str(val).split('(')[-1].split(')')[0]) if isinstance(val, str) else float(val) for val in u]
 
         f = [
-            self.__v_in_reference_trajectory * cos(x[2]),
-            self.__v_in_reference_trajectory * sin(x[2]),
-            self.__v_in_reference_trajectory * tan(x[3]) / self.__wheel_base,
+            self.__v_in_reference_trajectory * np.cos(x[2]),
+            self.__v_in_reference_trajectory * np.sin(x[2]),
+            self.__v_in_reference_trajectory * np.tan(x[3]) / self.__wheel_base,
             -1 / self.__τ * (x[3] - u[0]),
         ]
-
         return f
 
     def __update_state(self, x, u):
