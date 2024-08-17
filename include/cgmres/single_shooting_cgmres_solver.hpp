@@ -360,6 +360,7 @@ public:
 
     // for (size_t i = 0; i < dim; i++)
     // {
+    //   std::cerr << "initial_solution_[" << i << "] = " << initial_solution_[i] << std::endl;
     //   std::cerr << "solution_[" << i << "] = " << solution_[i] << std::endl;
     //   std::cerr << "solution_update_[" << i << "] = " << solution_update_[i] << std::endl;
     // }
