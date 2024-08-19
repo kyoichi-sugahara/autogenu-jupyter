@@ -364,12 +364,6 @@ public:
     solution_.noalias() += settings_.sampling_time * solution_update_;
     updated_solution_ = solution_update_;
 
-    // for (size_t i = 0; i < dim; i++)
-    // {
-    //   std::cerr << "initial_solution_[" << i << "] = " << initial_solution_[i] << std::endl;
-    //   std::cerr << "solution_[" << i << "] = " << solution_[i] << std::endl;
-    //   std::cerr << "solution_update_[" << i << "] = " << solution_update_[i] << std::endl;
-    // }
     retrieveSolution();
     if (settings_.profile_solver) timer_.tock();
 
