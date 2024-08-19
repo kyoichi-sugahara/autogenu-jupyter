@@ -46,6 +46,10 @@ public:
     return fonc_.template lpNorm<2>();
   }
 
+  Vector<dim> optErrorArray() const {
+  return fonc_.cwiseAbs();
+  }
+
   template <typename VectorType>
   void eval_fonc(const Scalar t, const MatrixBase<VectorType>& x, const Vector<dim>& solution) {
     nlp_.eval_fonc_hu(t, x, solution, fonc_);

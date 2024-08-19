@@ -336,6 +336,12 @@ public:
   }
 
   ///
+  /// @brief Getter of the current optimality errors..
+  /// @return The current optimality errors.
+  ///
+  Vector<dim> optErrorArray() const { return continuation_gmres_.optErrorArray(); }
+
+  ///
   /// @brief Updates the solution by performing C/GMRES method.
   /// @param[in] t Initial time of the horizon. 
   /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
