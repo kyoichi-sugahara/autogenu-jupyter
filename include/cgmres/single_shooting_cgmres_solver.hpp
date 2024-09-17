@@ -386,10 +386,30 @@ public:
     const auto opt_error_with_updated_solution_state = optError(t, x.derived(), solution_);
     continuation_gmres_.synchronize_ocp();
     const auto opt_error_with_updated_solution_state_reference = optError(t, x.derived(), solution_);
-    // std::cerr << "opt_error_with_initial_solution: " << opt_error_with_initial_solution << std::endl;
-    // std::cerr << "opt_error_with_updated_solution: " << opt_error_with_updated_solution << std::endl;
-    // std::cerr << "opt_error_with_updated_solution_state: " << opt_error_with_updated_solution_state << std::endl;
-    // std::cerr << "opt_error_with_updated_solution_state_reference: " << opt_error_with_updated_solution_state_reference << std::endl;
+
+    // Vector<dim> solution_update_2 = solution_update_;
+    // const auto gmres_iter_2
+    // = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
+    //       continuation_gmres_, t, x.derived(), solution_, solution_update_2);
+    // const Vector<dim> solution_2 = solution_ + settings_.sampling_time * solution_update_2;
+    // const auto opt_error_with_updated_solution_state_reference_2 = optError(t, x.derived(), solution_2);
+    // Vector<dim> solution_update_3 = solution_update_2;
+    // const auto gmres_iter_3
+    // = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
+    //       continuation_gmres_, t, x.derived(), solution_2, solution_update_3);
+    // const Vector<dim> solution_3 = solution_2 + settings_.sampling_time * solution_update_3;
+    // const auto opt_error_with_updated_solution_state_reference_3 = optError(t, x.derived(), solution_3);
+
+    // solution_ = solution_3;
+    // updated_solution_ = solution_update_3;
+
+
+    // std::cerr << "Optimality error with previous state and solution before update: " << opt_error_with_initial_solution << std::endl;
+    // std::cerr << "Optimality error with previous state and solution after update: " << opt_error_with_updated_solution << std::endl;
+    // std::cerr << "Optimality error with current state and solution after update (before reference sync): " << opt_error_with_updated_solution_state << std::endl;
+    // std::cerr << "Optimality error with current state and solution after update (after reference sync): " << opt_error_with_updated_solution_state_reference << std::endl;
+    // std::cerr << "Optimality error with current state and solution after update (after reference sync and re-solve): " << opt_error_with_updated_solution_state_reference_2 << std::endl;
+    // std::cerr << "Optimality error with current state and solution after update (after reference sync and re-solve 2): " << opt_error_with_updated_solution_state_reference_3 << std::endl;
 
     previous_x_ = x.derived();
     if (settings_.profile_solver) timer_.tock();
