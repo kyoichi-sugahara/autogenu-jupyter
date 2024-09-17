@@ -71,7 +71,8 @@ public:
       gmres_(),
       settings_(settings),
       solution_(Vector<dim>::Zero()),
-      solution_update_(Vector<dim>::Zero()) {
+      solution_update_(Vector<dim>::Zero()),
+      previous_x_(Vector<nx>::Zero()) {
     std::fill(uopt_.begin(), uopt_.end(), Vector<nu>::Zero());
     std::fill(ucopt_.begin(), ucopt_.end(), Vector<nuc>::Zero());
     if constexpr (nub > 0) {
@@ -330,8 +331,23 @@ public:
     if (x.size() != nx) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::optError] x.size() must be " + std::to_string(nx));
     }
-    continuation_gmres_.synchronize_ocp(); 
     continuation_gmres_.eval_fonc(t, x, solution_);
+    return optError();
+  }
+
+  ///
+  /// @brief Computes and gets the l2-norm of the current optimality errors.
+  /// @param[in] t Initial time of the horizon. 
+  /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
+  /// @param[in] solution The solution vector to be used in the optimality error computation.
+  /// @return The l2-norm of the current optimality errors.
+  ///
+  template <typename VectorType1, typename VectorType2>
+  Scalar optError(const Scalar t, const MatrixBase<VectorType1>& x, const MatrixBase<VectorType2>& solution) {
+    if (x.size() != nx) {
+      throw std::invalid_argument("[SingleShootingCGMRESSolver::optError] x.size() must be " + std::to_string(nx));
+    }
+    continuation_gmres_.eval_fonc(t, x, solution); 
     return optError();
   }
 
@@ -340,6 +356,10 @@ public:
   /// @return The current optimality errors.
   ///
   Vector<dim> optErrorArray() const { return continuation_gmres_.optErrorArray(); }
+
+  void synchronize_ocp() {
+    continuation_gmres_.synchronize_ocp();
+  }
 
   ///
   /// @brief Updates the solution by performing C/GMRES method.
@@ -351,34 +371,29 @@ public:
     if (x.size() != nx) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::update] x.size() must be " + std::to_string(nx));
     }
-    if (settings_.verbose_level >= 1) {
-      std::cout << "\n======================= update solution with C/GMRES =======================" << std::endl;
-    }
+    const auto initial_solution = solution_;
     initial_solution_ = solution_update_;
-    if (settings_.profile_solver) timer_.tick();
-    continuation_gmres_.synchronize_ocp(); 
-    // const auto opt_error_before_updated = continuation_gmres_.optError();
-    // const auto opt_error_before_updated_with_x = optError(t, x.derived());
-    const auto gmres_iter 
+    const auto gmres_iter
         = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
-              continuation_gmres_, t, x.derived(), solution_, solution_update_);
+              continuation_gmres_, t, previous_x_, solution_, solution_update_);
+
     const auto opt_error = continuation_gmres_.optError();
     solution_.noalias() += settings_.sampling_time * solution_update_;
     updated_solution_ = solution_update_;
-    // std::cerr << "opt_error: " << opt_error << std::endl;
-    // std::cerr << "opt_error_before_updated: " << opt_error_before_updated << std::endl;
-    // std::cerr << "opt_error_before_updated_with_x: " << opt_error_before_updated_with_x << std::endl;
-
     retrieveSolution();
+    const auto opt_error_with_initial_solution = optError(t, previous_x_, initial_solution);
+    const auto opt_error_with_updated_solution = optError(t, previous_x_, solution_);
+    const auto opt_error_with_updated_solution_state = optError(t, x.derived(), solution_);
+    continuation_gmres_.synchronize_ocp();
+    const auto opt_error_with_updated_solution_state_reference = optError(t, x.derived(), solution_);
+    // std::cerr << "opt_error_with_initial_solution: " << opt_error_with_initial_solution << std::endl;
+    // std::cerr << "opt_error_with_updated_solution: " << opt_error_with_updated_solution << std::endl;
+    // std::cerr << "opt_error_with_updated_solution_state: " << opt_error_with_updated_solution_state << std::endl;
+    // std::cerr << "opt_error_with_updated_solution_state_reference: " << opt_error_with_updated_solution_state_reference << std::endl;
+
+    previous_x_ = x.derived();
     if (settings_.profile_solver) timer_.tock();
 
-    // verbose
-    if (settings_.verbose_level >= 1) {
-      std::cout << "opt error: " << opt_error << std::endl;
-    }
-    if (settings_.verbose_level >= 2) {
-      std::cout << "number of GMRES iter: " << gmres_iter << " (kmax: " << kmax << ")" << std::endl;
-    }
     gmres_iter_ = gmres_iter;
   }
 
@@ -419,6 +434,7 @@ private:
   std::array<Vector<nuc>, N> ucopt_;
   std::array<Vector<nub>, N> dummyopt_;
   std::array<Vector<nub>, N> muopt_;
+  Vector<nx> previous_x_;
   int gmres_iter_;
 
   Vector<dim> solution_, solution_update_; 
