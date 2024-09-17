@@ -357,12 +357,17 @@ public:
     initial_solution_ = solution_update_;
     if (settings_.profile_solver) timer_.tick();
     continuation_gmres_.synchronize_ocp(); 
+    // const auto opt_error_before_updated = continuation_gmres_.optError();
+    // const auto opt_error_before_updated_with_x = optError(t, x.derived());
     const auto gmres_iter 
         = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
               continuation_gmres_, t, x.derived(), solution_, solution_update_);
     const auto opt_error = continuation_gmres_.optError();
     solution_.noalias() += settings_.sampling_time * solution_update_;
     updated_solution_ = solution_update_;
+    // std::cerr << "opt_error: " << opt_error << std::endl;
+    // std::cerr << "opt_error_before_updated: " << opt_error_before_updated << std::endl;
+    // std::cerr << "opt_error_before_updated_with_x: " << opt_error_before_updated_with_x << std::endl;
 
     retrieveSolution();
     if (settings_.profile_solver) timer_.tock();
