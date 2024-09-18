@@ -46,7 +46,7 @@ public:
     assert(T >= 0);
     x_[0] = x;
     // Compute the state trajectory over the horizon  
-    ocp_.eval_f(t, x_[0].data(), solution.template head<nuc>().data(), dx_.data());
+    ocp_.eval_f(t, 0, x_[0].data(), solution.template head<nuc>().data(), dx_.data());
     x_[1] = x_[0] + dt * dx_;
     for (size_t i=1; i<N; ++i) {
       const int inucb2 = i * (nuc + 2 * nub);
@@ -62,7 +62,7 @@ public:
       lmd_[i] = lmd_[i+1] + dt * dx_;
     }
     // Compute the erros in the first order necessary conditions (FONC)
-    ocp_.eval_hu(t, x_[0].data(), solution.template head<nuc>().data(), lmd_[1].data(), 
+    ocp_.eval_hu(t, 0, x_[0].data(), solution.template head<nuc>().data(), lmd_[1].data(), 
                  fonc_hu.template head<nuc>().data());
     for (size_t i=1; i<N; ++i) {
       const int inucb2 = i * (nuc + 2 * nub);

@@ -39,7 +39,7 @@ public:
     // Compute the Lagrange multiplier over the horizon 
     ocp_.eval_phix(t, x.derived().data(), lmd_.data());
     // Compute the erros in the first order necessary conditions (FONC)
-    ocp_.eval_hu(t, x.derived().data(), solution.data(), lmd_.data(), fonc_hu.data());
+    ocp_.eval_hu(t, 0, x.derived().data(), solution.data(), lmd_.data(), fonc_hu.data());
     if constexpr (nub > 0) {
       const auto uc    = solution.template head<nuc>();
       const auto dummy = solution.template segment<nub>(nuc);

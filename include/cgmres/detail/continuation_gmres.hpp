@@ -64,7 +64,7 @@ public:
     assert(b_vec.size() == dim);
 
     const double t1 = t + finite_difference_epsilon_;
-    nlp_.ocp().eval_f(t, x.derived().data(), solution.derived().data(), dx_.data());
+    nlp_.ocp().eval_f(t, 0, x.derived().data(), solution.derived().data(), dx_.data());
     x_1_ = x + finite_difference_epsilon_ * dx_;
     updated_solution_ = solution + finite_difference_epsilon_ * solution_update;
 

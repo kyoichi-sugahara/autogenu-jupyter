@@ -19,7 +19,7 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> ForwardEuler(const OCP& ocp, const doub
                      const Eigen::MatrixBase<ControlInputVectorType >& u) {
   Eigen::Matrix<double, Eigen::Dynamic, 1> x1;
   x1.setZero(x.size());
-  ocp.eval_f(t, x, u, x1);
+  ocp.eval_f(t, 0, x, u, x1);
   x1.array() *= dt;
   x1.noalias() += x;
   return x1;
@@ -45,13 +45,13 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> RK4(const OCP& ocp, const double t, con
   k3.setZero(x.size());
   k4.setZero(x.size());
   x1.setZero(x.size());
-  ocp.eval_f(t, x, u, k1);
+  ocp.eval_f(t, 0, x, u, k1);
   x1 = x + 0.5 * dt * k1;
-  ocp.eval_f(t+0.5*dt, x1, u, k2);
+  ocp.eval_f(t+0.5*dt, 0, x1, u, k2);
   x1 = x + dt * 0.5 * (std::sqrt(2.0)-1.0) * k1 + dt*(1.0-(1.0/std::sqrt(2.0))) * k2;
-  ocp.eval_f(t+0.5*dt, x1, u, k3);
+  ocp.eval_f(t+0.5*dt, 0, x1, u, k3);
   x1 = x - dt * 0.5 * std::sqrt(2.0) * k2 + dt * (1.0+(1.0/std::sqrt(2.0))) * k3;
-  ocp.eval_f(t+dt, x1, u, k4);
+  ocp.eval_f(t+dt, 0, x1, u, k4);
   x1 = x + (dt/6.0) * (k1+(2.0-std::sqrt(2.0))*k2 + (2.0+std::sqrt(2.0))*k3+k4);
   return x1;
 }
