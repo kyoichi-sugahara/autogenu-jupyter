@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "cgmres/types.hpp"
 #include "cgmres/solver_settings.hpp"
 #include "cgmres/timer.hpp"
 
@@ -70,14 +69,14 @@ public:
     : continuation_gmres_(SingleShootingNLP_(ocp, horizon), settings.finite_difference_epsilon, settings.zeta),
       gmres_(),
       settings_(settings),
-      solution_(Vector<dim>::Zero()),
-      solution_update_(Vector<dim>::Zero()),
-      previous_x_(Vector<nx>::Zero()) {
-    std::fill(uopt_.begin(), uopt_.end(), Vector<nu>::Zero());
-    std::fill(ucopt_.begin(), ucopt_.end(), Vector<nuc>::Zero());
+      solution_(Eigen::Matrix<double, dim, 1>::Zero()),
+      solution_update_(Eigen::Matrix<double, dim, 1>::Zero()),
+      previous_x_(Eigen::Matrix<double, nx, 1>::Zero()) {
+    std::fill(uopt_.begin(), uopt_.end(), Eigen::Matrix<double, nu, 1>::Zero());
+    std::fill(ucopt_.begin(), ucopt_.end(), Eigen::Matrix<double, nuc, 1>::Zero());
     if constexpr (nub > 0) {
-      std::fill(dummyopt_.begin(), dummyopt_.end(), Vector<nub>::Zero());
-      std::fill(muopt_.begin(), muopt_.end(), Vector<nub>::Zero());
+      std::fill(dummyopt_.begin(), dummyopt_.end(), Eigen::Matrix<double, nub, 1>::Zero());
+      std::fill(muopt_.begin(), muopt_.end(), Eigen::Matrix<double, nub, 1>::Zero());
     }
 
     if (settings.finite_difference_epsilon <= 0.0) {
@@ -106,7 +105,7 @@ public:
   /// @param[in] u The control input vector. Size must be SingleShootingCGMRESSolver::nu.
   ///
   template <typename VectorType>
-  void set_u(const MatrixBase<VectorType>& u) {
+  void set_u(const Eigen::MatrixBase<VectorType>& u) {
     if (u.size() != nu) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::set_u] u.size() must be " + std::to_string(nu));
     }
@@ -125,7 +124,7 @@ public:
   /// Size must be SingleShootingCGMRESSolver::nuc.
   ///
   template <typename VectorType>
-  void set_uc(const MatrixBase<VectorType>& uc) {
+  void set_uc(const Eigen::MatrixBase<VectorType>& uc) {
     if (uc.size() != nuc) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::set_uc] uc.size() must be " + std::to_string(nuc));
     }
@@ -143,7 +142,7 @@ public:
   /// @param[in] dummy The dummy input vector. Size must be SingleShootingCGMRESSolver::nub.
   ///
   template <typename VectorType>
-  void set_dummy(const MatrixBase<VectorType>& dummy) {
+  void set_dummy(const Eigen::MatrixBase<VectorType>& dummy) {
     if (dummy.size() != nub) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::set_dummy] dummy.size() must be " + std::to_string(nub));
     }
@@ -158,7 +157,7 @@ public:
   /// @param[in] mu The Lagrange multiplier. Size must be SingleShootingCGMRESSolver::nub.
   ///
   template <typename VectorType>
-  void set_mu(const MatrixBase<VectorType>& mu) {
+  void set_mu(const Eigen::MatrixBase<VectorType>& mu) {
     if (mu.size() != nub) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::set_mu] mu.size() must be " + std::to_string(nub));
     }
@@ -258,37 +257,37 @@ public:
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal control input vectors over the horizon.
   ///
-  const std::array<Vector<nu>, N>& uopt() const { return uopt_; }
+  const std::array<Eigen::Matrix<double, nu, 1>, N>& uopt() const { return uopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal concatenatins of the control input vector and Lagrange multiplier with respect to the equality constraints.
   ///
-  const std::array<Vector<nuc>, N>& ucopt() const { return ucopt_; }
+  const std::array<Eigen::Matrix<double, nuc, 1>, N>& ucopt() const { return ucopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal state vectors over the horizon.
   ///
-  const std::array<Vector<nx>, N+1>& xopt() const { return continuation_gmres_.x(); }
+  const std::array<Eigen::Matrix<double, nx, 1>, N+1>& xopt() const { return continuation_gmres_.x(); }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal costate vectors over the horizon.
   ///
-  const std::array<Vector<nx>, N+1>& lmdopt() const { return continuation_gmres_.lmd(); }
+  const std::array<Eigen::Matrix<double, nx, 1>, N+1>& lmdopt() const { return continuation_gmres_.lmd(); }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal dummy input vectors with respect to the control input bounds constraint over the horizon.
   ///
-  const std::array<Vector<nub>, N>& dummyopt() const { return dummyopt_; }
+  const std::array<Eigen::Matrix<double, nub, 1>, N>& dummyopt() const { return dummyopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the Lagrange multipliers with respect to the control input bounds constraint over the horizon.
   ///
-  const std::array<Vector<nub>, N>& muopt() const { return muopt_; }
+  const std::array<Eigen::Matrix<double, nub, 1>, N>& muopt() const { return muopt_; }
 
   ///
   /// @brief Getter of the optimal solution setting.
@@ -300,13 +299,13 @@ public:
   /// @brief Getter of the initial solution.
   /// @return const reference to the initial solution.
   ///
-  const std::array<Vector<nu>, N>& initial_solution() const { return initial_sol_; }
+  const std::array<Eigen::Matrix<double, nu, 1>, N>& initial_solution() const { return initial_sol_; }
 
   ///
   /// @brief Getter of the updated solution.
   /// @return const reference to the updated solution.
   ///
-  const std::array<Vector<nu>, N>& updated_solution() const { return updated_sol_; }
+  const std::array<Eigen::Matrix<double, nu, 1>, N>& updated_solution() const { return updated_sol_; }
 
   ///
   /// @brief Getter of the gmres iteration number.
@@ -318,16 +317,16 @@ public:
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
-  Scalar optError() const { return continuation_gmres_.optError(); }
+  double optError() const { return continuation_gmres_.optError(); }
 
   ///
   /// @brief Computes and gets the l2-norm of the current optimality errors.
-  /// @param[in] t Initial time of the horizon. 
+  /// @param[in] t Initial time of the horizon.
   /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
   /// @return The l2-norm of the current optimality errors.
   ///
   template <typename VectorType>
-  Scalar optError(const Scalar t, const MatrixBase<VectorType>& x) {
+  double optError(const double t, const Eigen::MatrixBase<VectorType>& x) {
     if (x.size() != nx) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::optError] x.size() must be " + std::to_string(nx));
     }
@@ -343,7 +342,7 @@ public:
   /// @return The l2-norm of the current optimality errors.
   ///
   template <typename VectorType1, typename VectorType2>
-  Scalar optError(const Scalar t, const MatrixBase<VectorType1>& x, const MatrixBase<VectorType2>& solution) {
+  double optError(const double t, const Eigen::MatrixBase<VectorType1>& x, const Eigen::MatrixBase<VectorType2>& solution) {
     if (x.size() != nx) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::optError] x.size() must be " + std::to_string(nx));
     }
@@ -355,7 +354,7 @@ public:
   /// @brief Getter of the current optimality errors..
   /// @return The current optimality errors.
   ///
-  Vector<dim> optErrorArray() const { return continuation_gmres_.optErrorArray(); }
+  Eigen::Matrix<double, dim, 1> optErrorArray() const { return continuation_gmres_.optErrorArray(); }
 
   void synchronize_ocp() {
     continuation_gmres_.synchronize_ocp();
@@ -363,18 +362,18 @@ public:
 
   ///
   /// @brief Updates the solution by performing C/GMRES method.
-  /// @param[in] t Initial time of the horizon. 
+  /// @param[in] t Initial time of the horizon.
   /// @param[in] x Initial state of the horizon. Size must be SingleShootingCGMRESSolver::nx.
   ///
   template <typename VectorType>
-  void update(const Scalar t, const MatrixBase<VectorType>& x) {
+  void update(const double t, const Eigen::MatrixBase<VectorType>& x) {
     if (x.size() != nx) {
       throw std::invalid_argument("[SingleShootingCGMRESSolver::update] x.size() must be " + std::to_string(nx));
     }
     const auto initial_solution = solution_;
     initial_solution_ = solution_update_;
     const auto gmres_iter
-        = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
+        = gmres_.template solve<const double, const VectorType&, const Eigen::Matrix<double, dim, 1>&>(
               continuation_gmres_, t, previous_x_, solution_, solution_update_);
 
     const auto opt_error = continuation_gmres_.optError();
@@ -387,17 +386,17 @@ public:
     continuation_gmres_.synchronize_ocp();
     const auto opt_error_with_updated_solution_state_reference = optError(t, x.derived(), solution_);
 
-    // Vector<dim> solution_update_2 = solution_update_;
+    // Eigen::Matrix<double, dim, 1> solution_update_2 = solution_update_;
     // const auto gmres_iter_2
-    // = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
+    // = gmres_.template solve<const double, const VectorType&, const Eigen::Matrix<double, dim, 1>&>(
     //       continuation_gmres_, t, x.derived(), solution_, solution_update_2);
-    // const Vector<dim> solution_2 = solution_ + settings_.sampling_time * solution_update_2;
+    // const Eigen::Matrix<double, dim, 1> solution_2 = solution_ + settings_.sampling_time * solution_update_2;
     // const auto opt_error_with_updated_solution_state_reference_2 = optError(t, x.derived(), solution_2);
-    // Vector<dim> solution_update_3 = solution_update_2;
+    // Eigen::Matrix<double, dim, 1> solution_update_3 = solution_update_2;
     // const auto gmres_iter_3
-    // = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
+    // = gmres_.template solve<const double, const VectorType&, const Eigen::Matrix<double, dim, 1>&>(
     //       continuation_gmres_, t, x.derived(), solution_2, solution_update_3);
-    // const Vector<dim> solution_3 = solution_2 + settings_.sampling_time * solution_update_3;
+    // const Eigen::Matrix<double, dim, 1> solution_3 = solution_2 + settings_.sampling_time * solution_update_3;
     // const auto opt_error_with_updated_solution_state_reference_3 = optError(t, x.derived(), solution_3);
 
     // solution_ = solution_3;
@@ -448,17 +447,17 @@ private:
   SolverSettings settings_;
   Timer timer_;
 
-  std::array<Vector<nu>, N> uopt_;
-  std::array<Vector<nu>, N> initial_sol_;
-  std::array<Vector<nu>, N> updated_sol_;
-  std::array<Vector<nuc>, N> ucopt_;
-  std::array<Vector<nub>, N> dummyopt_;
-  std::array<Vector<nub>, N> muopt_;
-  Vector<nx> previous_x_;
+  std::array<Eigen::Matrix<double, nu, 1>, N> uopt_;
+  std::array<Eigen::Matrix<double, nu, 1>, N> initial_sol_;
+  std::array<Eigen::Matrix<double, nu, 1>, N> updated_sol_;
+  std::array<Eigen::Matrix<double, nuc, 1>, N> ucopt_;
+  std::array<Eigen::Matrix<double, nub, 1>, N> dummyopt_;
+  std::array<Eigen::Matrix<double, nub, 1>, N> muopt_;
+  Eigen::Matrix<double, nx, 1> previous_x_;
   int gmres_iter_;
 
-  Vector<dim> solution_, solution_update_; 
-  Vector<dim> initial_solution_, updated_solution_;
+  Eigen::Matrix<double, dim, 1> solution_, solution_update_; 
+  Eigen::Matrix<double, dim, 1> initial_solution_, updated_solution_;
 
   void setInnerSolution() {
     for (size_t i=0; i<N; ++i) {

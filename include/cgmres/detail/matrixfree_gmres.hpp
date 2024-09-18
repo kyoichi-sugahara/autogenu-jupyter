@@ -6,7 +6,6 @@
 #include <limits>
 #include <stdexcept>
 
-#include "cgmres/types.hpp"
 
 #include "cgmres/detail/macros.hpp"
 
@@ -21,12 +20,12 @@ public:
   static constexpr int kmax = std::min(dim, _kmax);
 
   MatrixFreeGMRES()
-    : hessenberg_mat_(Matrix<kmax+1, kmax+1>::Zero()), 
-      basis_mat_(Matrix<dim, kmax+1>::Zero()), 
-      b_vec_(Vector<dim>::Zero()), 
-      givens_c_vec_(Vector<kmax+1>::Zero()), 
-      givens_s_vec_(Vector<kmax+1>::Zero()), 
-      g_vec_(Vector<kmax+1>::Zero()) {
+    : hessenberg_mat_(Eigen::Matrix<double, kmax+1, kmax+1>::Zero()), 
+      basis_mat_(Eigen::Matrix<double, dim, kmax+1>::Zero()), 
+      b_vec_(Eigen::Matrix<double, dim, 1>::Zero()), 
+      givens_c_vec_(Eigen::Matrix<double, kmax+1, 1>::Zero()), 
+      givens_s_vec_(Eigen::Matrix<double, kmax+1, 1>::Zero()), 
+      g_vec_(Eigen::Matrix<double, kmax+1, 1>::Zero()) {
     static_assert(dim > 0);
     static_assert(kmax > 0);
     static_assert(dim >= kmax);
@@ -37,7 +36,7 @@ public:
   template <typename... LinearProblemArgs>
   int solve(LinearProblem& linear_problem, 
             LinearProblemArgs... linear_problem_args, 
-            Vector<dim>& linear_problem_solution) {
+            Eigen::Matrix<double, dim, 1>& linear_problem_solution) {
     // 1. Initialization: Initialize vectors for Givens rotation with zeros
     givens_c_vec_.setZero();
     givens_s_vec_.setZero();
@@ -84,7 +83,7 @@ public:
         givensRotation(hessenberg_mat_.row(k), j);
       }
       // Calculate rotation parameters (c, s)
-      const Scalar nu = std::sqrt(hessenberg_mat_.coeff(k, k)*hessenberg_mat_.coeff(k, k)
+      const double nu = std::sqrt(hessenberg_mat_.coeff(k, k)*hessenberg_mat_.coeff(k, k)
                                   +hessenberg_mat_.coeff(k, k+1)*hessenberg_mat_.coeff(k, k+1));
       if (nu) {
         givens_c_vec_.coeffRef(k) = hessenberg_mat_.coeff(k, k) / nu;
@@ -103,7 +102,7 @@ public:
     // 4. Calculate the solution
     // a. Solve the transformed upper triangular system by back substitution
     for (int i=k-1; i>=0; --i) {
-      Scalar tmp = g_vec_.coeff(i);
+      double tmp = g_vec_.coeff(i);
       for (int j=i+1; j<k; ++j) {
         tmp -= hessenberg_mat_.coeff(j, i) * givens_c_vec_.coeff(j);
       }
@@ -111,7 +110,7 @@ public:
     }
     // b. Calculate the final solution
     for (int i=0; i<dim; ++i) {
-      Scalar tmp = 0.0;
+      double tmp = 0.0;
       for (int j=0; j<k; ++j) { 
         tmp += basis_mat_.coeff(i, j) * givens_c_vec_.coeff(j);
       }
@@ -124,17 +123,17 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
-  Matrix<kmax+1, kmax+1> hessenberg_mat_;
-  Matrix<dim, kmax+1> basis_mat_;
-  Vector<dim> b_vec_;
-  Vector<kmax+1> givens_c_vec_, givens_s_vec_, g_vec_;
+  Eigen::Matrix<double, kmax+1, kmax+1> hessenberg_mat_;
+  Eigen::Matrix<double, dim, kmax+1> basis_mat_;
+  Eigen::Matrix<double, dim, 1> b_vec_;
+  Eigen::Matrix<double, kmax+1, 1> givens_c_vec_, givens_s_vec_, g_vec_;
 
   template <typename VectorType>
-  inline void givensRotation(const MatrixBase<VectorType>& column_vec, 
+  inline void givensRotation(const Eigen::MatrixBase<VectorType>& column_vec, 
                              const int i_column) const {
-    const Scalar tmp1 = givens_c_vec_.coeff(i_column) * column_vec.coeff(i_column) 
+    const double tmp1 = givens_c_vec_.coeff(i_column) * column_vec.coeff(i_column) 
                         - givens_s_vec_.coeff(i_column) * column_vec.coeff(i_column+1);
-    const Scalar tmp2 = givens_s_vec_.coeff(i_column) * column_vec.coeff(i_column) 
+    const double tmp2 = givens_s_vec_.coeff(i_column) * column_vec.coeff(i_column) 
                         + givens_c_vec_.coeff(i_column) * column_vec.coeff(i_column+1);
     CGMRES_EIGEN_CONST_CAST(VectorType, column_vec).coeffRef(i_column) = tmp1;
     CGMRES_EIGEN_CONST_CAST(VectorType, column_vec).coeffRef(i_column+1) = tmp2;

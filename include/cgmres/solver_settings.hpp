@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-#include "cgmres/types.hpp"
 
 namespace cgmres {
 
@@ -24,20 +23,20 @@ struct SolverSettings {
   /// Has nothing to do with SingleShootingCGMRESSolver or MultipleShootingCGMRESSolver. 
   /// Must be non-negative. Default value is 1.0e-04.
   ///
-  Scalar opterr_tol = 1.0e-04;
+  double opterr_tol = 1.0e-04;
 
   ///
   /// @brief Epsilon of the finite difference approximation. Must be positive.
   /// Default value is 1.0e-08.
   ///
-  Scalar finite_difference_epsilon = 1.0e-08;
+  double finite_difference_epsilon = 1.0e-08;
 
   ///
   /// @brief The sampling time of MPC and used in SingleShootingCGMRESSolver
   /// and MultipleShootingCGMRESSolver. Has nothing to do with ZeroHorizonOCPSolver. 
   /// Must be positive. Default is 0.001.
   ///
-  Scalar sampling_time = 0.001; 
+  double sampling_time = 0.001; 
 
   ///
   /// @brief The stabilization parameter of the continuation method. 
@@ -46,7 +45,7 @@ struct SolverSettings {
   /// Has nothing to do with ZeroHorizonOCPSolver. 
   /// Must be positive. Default is 1000.0.
   ///
-  Scalar zeta = 1000.0; 
+  double zeta = 1000.0; 
 
   ///
   /// @brief The minimum value of the dummy inputs. 
@@ -55,7 +54,7 @@ struct SolverSettings {
   /// used only in SingleShootingCGMRESSolver::init_dummy_mu() and 
   /// ZeroHorizonOCPSolver::init_dummy_mu(). Must be non-negaive. Default is 1.0e-03.
   ///
-  Scalar min_dummy = 1.0e-03;
+  double min_dummy = 1.0e-03;
 
   ///
   /// @brief Verbose level. 0: no printings. 1-2: print some things. Default is 0.

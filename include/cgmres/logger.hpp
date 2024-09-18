@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <sys/time.h>
 
-#include "cgmres/types.hpp"
 #include "cgmres/timer.hpp"
 
 
@@ -97,8 +96,8 @@ explicit Logger(const std::string& log_dir) {
   ///
   template <typename StateVectorType, typename ControlInputVectorType, std::size_t N>
   void save(
-    const Scalar t, const MatrixBase<StateVectorType> & x,
-    const MatrixBase<ControlInputVectorType> & u,
+    const double t, const Eigen::MatrixBase<StateVectorType> & x,
+    const Eigen::MatrixBase<ControlInputVectorType> & u,
     const std::array<ControlInputVectorType, N> & uopt,
     const std::array<ControlInputVectorType, N> & initial_solution,
     const std::array<ControlInputVectorType, N> & updated_solution,

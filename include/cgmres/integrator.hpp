@@ -1,7 +1,6 @@
 #ifndef CGMRES__INTEGRATOR_HPP_
 #define CGMRES__INTEGRATOR_HPP_
 
-#include "cgmres/types.hpp"
 
 namespace cgmres {
 
@@ -15,10 +14,10 @@ namespace cgmres {
 /// @return State at time t+dt.
 ///
 template <typename OCP, typename StateVectorType, typename ControlInputVectorType>
-VectorX ForwardEuler(const OCP& ocp, const Scalar t, const Scalar dt, 
-                     const MatrixBase<StateVectorType>& x, 
-                     const MatrixBase<ControlInputVectorType >& u) {
-  VectorX x1;
+Eigen::Matrix<double, Eigen::Dynamic, 1> ForwardEuler(const OCP& ocp, const double t, const double dt, 
+                     const Eigen::MatrixBase<StateVectorType>& x, 
+                     const Eigen::MatrixBase<ControlInputVectorType >& u) {
+  Eigen::Matrix<double, Eigen::Dynamic, 1> x1;
   x1.setZero(x.size());
   ocp.eval_f(t, x, u, x1);
   x1.array() *= dt;
@@ -37,10 +36,10 @@ VectorX ForwardEuler(const OCP& ocp, const Scalar t, const Scalar dt,
 /// @return State at time t+dt.
 ///
 template <typename OCP, typename StateVectorType, typename ControlInputVectorType>
-VectorX RK4(const OCP& ocp, const Scalar t, const Scalar dt, 
-            const MatrixBase<StateVectorType>& x, 
-            const MatrixBase<ControlInputVectorType >& u) {
-  VectorX k1, k2, k3, k4, x1;
+Eigen::Matrix<double, Eigen::Dynamic, 1> RK4(const OCP& ocp, const double t, const double dt, 
+            const Eigen::MatrixBase<StateVectorType>& x, 
+            const Eigen::MatrixBase<ControlInputVectorType >& u) {
+  Eigen::Matrix<double, Eigen::Dynamic, 1> k1, k2, k3, k4, x1;
   k1.setZero(x.size());
   k2.setZero(x.size());
   k3.setZero(x.size());

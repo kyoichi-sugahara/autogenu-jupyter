@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "cgmres/types.hpp"
 #include "cgmres/solver_settings.hpp"
 #include "cgmres/timer.hpp"
 
@@ -67,10 +66,10 @@ public:
     : newton_gmres_(ZeroHorizonNLP_(ocp), settings.finite_difference_epsilon),
       gmres_(),
       settings_(settings),
-      uopt_(Vector<nu>::Zero()),
-      ucopt_(Vector<nuc>::Zero()),
-      solution_(Vector<dim>::Zero()),
-      solution_update_(Vector<dim>::Zero()) {
+      uopt_(Eigen::Matrix<double, nu, 1>::Zero()),
+      ucopt_(Eigen::Matrix<double, nuc, 1>::Zero()),
+      solution_(Eigen::Matrix<double, dim, 1>::Zero()),
+      solution_update_(Eigen::Matrix<double, dim, 1>::Zero()) {
   }
 
   ///
@@ -117,7 +116,7 @@ public:
   /// @param[in] dummy The dummy input vector. Size must be ZeroHorizonOCPSolver::nub.
   ///
   template <typename VectorType>
-  void set_dummy(const MatrixBase<VectorType>& dummy) {
+  void set_dummy(const Eigen::MatrixBase<VectorType>& dummy) {
     if (dummy.size() != nub) {
       throw std::invalid_argument("[ZeroHorizonOCPSolver::set_dummy] dummy.size() must be " + std::to_string(nub));
     }
@@ -130,7 +129,7 @@ public:
   /// @param[in] mu The Lagrange multiplier. Size must be ZeroHorizonOCPSolver::nub.
   ///
   template <typename VectorType>
-  void set_mu(const MatrixBase<VectorType>& mu) {
+  void set_mu(const Eigen::MatrixBase<VectorType>& mu) {
     if (mu.size() != nub) {
       throw std::invalid_argument("[ZeroHorizonOCPSolver::set_mu] mu.size() must be " + std::to_string(nub));
     }
@@ -151,31 +150,31 @@ public:
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal control input vector.
   ///
-  const Vector<nu>& uopt() const { return uopt_; }
+  const Eigen::Matrix<double, nu, 1>& uopt() const { return uopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal concatenatins of the control input vector and Lagrange multiplier with respect to the equality constraints.
   ///
-  const Vector<nuc>& ucopt() const { return ucopt_; }
+  const Eigen::Matrix<double, nuc, 1>& ucopt() const { return ucopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal dummy input vectors with respect to the control input bounds constraint.
   ///
-  const Vector<nub>& dummyopt() const { return dummyopt_; }
+  const Eigen::Matrix<double, nub, 1>& dummyopt() const { return dummyopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the Lagrange multipliers with respect to the control input bounds constraint.
   ///
-  const Vector<nub>& muopt() const { return muopt_; }
+  const Eigen::Matrix<double, nub, 1>& muopt() const { return muopt_; }
 
   ///
   /// @brief Getter of the optimal solution.
   /// @return const reference to the optimal costate vector.
   ///
-  const Vector<nx>& lmdopt() const { return newton_gmres_.lmd(); }
+  const Eigen::Matrix<double, nx, 1>& lmdopt() const { return newton_gmres_.lmd(); }
 
   ///
   /// @brief Getter of the gmres iteration number.
@@ -187,7 +186,7 @@ public:
   /// @brief Gets the l2-norm of the current optimality errors.
   /// @return The l2-norm of the current optimality errors.
   ///
-  Scalar optError() const { return newton_gmres_.optError(); }
+  double optError() const { return newton_gmres_.optError(); }
 
   ///
   /// @brief Computes and gets the l2-norm of the current optimality errors.
@@ -196,11 +195,11 @@ public:
   /// @return The l2-norm of the current optimality errors.
   ///
   template <typename VectorType>
-  Scalar optError(const Scalar t, const MatrixBase<VectorType>& x) {
+  double optError(const double t, const Eigen::MatrixBase<VectorType>& x) {
     if (x.size() != nx) {
       throw std::invalid_argument("[ZeroHorizonOCPSolver::optError] x.size() must be " + std::to_string(nx));
     }
-    newton_gmres_.synchronize_ocp(); 
+    newton_gmres_.synchronize_ocp();
     newton_gmres_.eval_fonc(t, x, solution_);
     return optError();
   }
@@ -211,7 +210,7 @@ public:
   /// @param[in] x State. Size must be ZeroHorizonOCPSolver::nx.
   ///
   template <typename VectorType>
-  void solve(const Scalar t, const MatrixBase<VectorType>& x) {
+  void solve(const double t, const Eigen::MatrixBase<VectorType>& x) {
     if (x.size() != nx) {
       throw std::invalid_argument("[ZeroHorizonOCPSolver::update] x.size() must be " + std::to_string(nx));
     }
@@ -223,7 +222,7 @@ public:
     for (size_t iter=0; iter<settings_.max_iter; ++iter) {
       if (settings_.profile_solver) timer_.tick();
       const auto gmres_iter 
-          = gmres_.template solve<const Scalar, const VectorType&, const Vector<dim>&>(
+          = gmres_.template solve<const double, const VectorType&, const Eigen::Matrix<double, dim, 1>&>(
                 newton_gmres_, t, x.derived(), solution_, solution_update_);
       gmres_iter_ = gmres_iter;
       const auto opt_error = newton_gmres_.optError();
@@ -236,7 +235,7 @@ public:
                   << " (opt tol: " << settings_.opterr_tol << ")" <<  std::endl;
       }
       if (settings_.verbose_level >= 2) {
-        std::cout << "         number of GMRES iter: " << gmres_iter 
+        std::cout << "         number of GMRES iter: " << gmres_iter
                   << " (kmax: " << kmax << ")" << std::endl;
       }
 
@@ -280,12 +279,12 @@ private:
   SolverSettings settings_;
   Timer timer_;
 
-  Vector<nu> uopt_;
-  Vector<nuc> ucopt_;
-  Vector<nub> dummyopt_, muopt_;
+  Eigen::Matrix<double, nu, 1> uopt_;
+  Eigen::Matrix<double, nuc, 1> ucopt_;
+  Eigen::Matrix<double, nub, 1> dummyopt_, muopt_;
   int gmres_iter_;
 
-  Vector<dim> solution_, solution_update_; 
+  Eigen::Matrix<double, dim, 1> solution_, solution_update_;
 
   void setInnerSolution() {
     solution_.template head<nuc>() = ucopt_;

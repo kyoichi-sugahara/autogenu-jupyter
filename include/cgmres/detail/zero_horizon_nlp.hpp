@@ -3,7 +3,6 @@
 
 #include <array>
 
-#include "cgmres/types.hpp"
 #include "cgmres/horizon.hpp"
 
 #include "cgmres/detail/control_input_bounds.hpp"
@@ -23,7 +22,7 @@ public:
 
   ZeroHorizonNLP(const OCP& ocp) 
     : ocp_(ocp),
-      lmd_(Vector<nx>::Zero()) {
+      lmd_(Eigen::Matrix<double, nx, 1>::Zero()) {
     static_assert(OCP::nx > 0);
     static_assert(OCP::nu > 0);
     static_assert(OCP::nc >= 0);
@@ -35,9 +34,9 @@ public:
   ~ZeroHorizonNLP() = default;
 
   template <typename VectorType>
-  void eval_fonc_hu(const Scalar t, const MatrixBase<VectorType>& x, const Vector<dim>& solution,
-                    Vector<dim>& fonc_hu) {
-    // Compute the Lagrange multiplier over the horizon  
+  void eval_fonc_hu(const double t, const Eigen::MatrixBase<VectorType>& x, const Eigen::Matrix<double, dim, 1>& solution,
+                    Eigen::Matrix<double, dim, 1>& fonc_hu) {
+    // Compute the Lagrange multiplier over the horizon 
     ocp_.eval_phix(t, x.derived().data(), lmd_.data());
     // Compute the erros in the first order necessary conditions (FONC)
     ocp_.eval_hu(t, x.derived().data(), solution.data(), lmd_.data(), fonc_hu.data());
@@ -54,7 +53,7 @@ public:
     }
   }
 
-  void retrieve_dummy(Vector<dim>& solution, Vector<dim>& fonc_hu, const Scalar min_dummy) {
+  void retrieve_dummy(Eigen::Matrix<double, dim, 1>& solution, Eigen::Matrix<double, dim, 1>& fonc_hu, const double min_dummy) {
     if constexpr (nub > 0) {
       const auto uc    = solution.template head<nuc>();
       auto dummy = solution.template segment<nub>(nuc);
@@ -67,7 +66,7 @@ public:
     }
   }
 
-  void retrieve_mu(Vector<dim>& solution, Vector<dim>& fonc_hu) {
+  void retrieve_mu(Eigen::Matrix<double, dim, 1>& solution, Eigen::Matrix<double, dim, 1>& fonc_hu) {
     if constexpr (nub > 0) {
       const auto uc    = solution.template head<nuc>();
       const auto dummy = solution.template segment<nub>(nuc);
@@ -83,13 +82,13 @@ public:
 
   const OCP& ocp() const { return ocp_; }
 
-  const Vector<nx>& lmd() const { return lmd_; }
+  const Eigen::Matrix<double, nx, 1>& lmd() const { return lmd_; }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
   OCP ocp_;
-  Vector<nx> lmd_;
+  Eigen::Matrix<double, nx, 1> lmd_;
 };
 
 } // namespace detail

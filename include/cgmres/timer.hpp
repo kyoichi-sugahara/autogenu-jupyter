@@ -4,7 +4,6 @@
 #include <chrono>
 #include <iostream>
 
-#include "cgmres/types.hpp"
 
 
 namespace cgmres {
@@ -17,12 +16,12 @@ struct TimingProfile {
   ///
   /// @brief Average computational time in milliseconds.
   ///
-  Scalar average_time_ms = 0;
+  double average_time_ms = 0;
 
   ///
   /// @brief Maximum computational time in milliseconds.
   ///
-  Scalar max_time_ms = 0;
+  double max_time_ms = 0;
 
   ///
   /// @brief Number of timing counts.
@@ -77,7 +76,7 @@ public:
   ///
   void tock() {
     const auto now = std::chrono::high_resolution_clock::now();
-    const std::chrono::duration<Scalar, std::milli> elapsed_time = now - time_point_;
+    const std::chrono::duration<double, std::milli> elapsed_time = now - time_point_;
     total_elapsed_time_ += elapsed_time.count();
     max_elapsed_time_ = std::max(max_elapsed_time_, elapsed_time.count());
     ++counts_;
@@ -99,7 +98,7 @@ public:
 
 private:
   unsigned long counts_;
-  Scalar total_elapsed_time_, max_elapsed_time_;
+  double total_elapsed_time_, max_elapsed_time_;
   std::chrono::high_resolution_clock::time_point time_point_;
 };
 

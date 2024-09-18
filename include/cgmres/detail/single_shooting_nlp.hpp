@@ -3,7 +3,6 @@
 
 #include <array>
 
-#include "cgmres/types.hpp"
 #include "cgmres/horizon.hpp"
 
 #include "cgmres/detail/control_input_bounds.hpp"
@@ -25,14 +24,14 @@ public:
   SingleShootingNLP(const OCP& ocp, const Horizon& horizon) 
     : ocp_(ocp),
       horizon_(horizon),
-      dx_(Vector<nx>::Zero()) {
+      dx_(Eigen::Matrix<double, nx, 1>::Zero()) {
     static_assert(OCP::nx > 0);
     static_assert(OCP::nu > 0);
     static_assert(OCP::nc >= 0);
     static_assert(OCP::nub >= 0);
     static_assert(N > 0);
-    std::fill(x_.begin(), x_.end(), Vector<nx>::Zero());
-    std::fill(lmd_.begin(), lmd_.end(), Vector<nx>::Zero());
+    std::fill(x_.begin(), x_.end(), Eigen::Matrix<double, nx, 1>::Zero());
+    std::fill(lmd_.begin(), lmd_.end(), Eigen::Matrix<double, nx, 1>::Zero());
   }
 
   SingleShootingNLP() = default;
@@ -40,10 +39,10 @@ public:
   ~SingleShootingNLP() = default;
 
   template <typename VectorType>
-  void eval_fonc_hu(const Scalar t, const MatrixBase<VectorType>& x, const Vector<dim>& solution,
-                    Vector<dim>& fonc_hu) {
-    const Scalar T = horizon_.T(t);
-    const Scalar dt = T / N;
+  void eval_fonc_hu(const double t, const Eigen::MatrixBase<VectorType>& x, const Eigen::Matrix<double, dim, 1>& solution,
+                    Eigen::Matrix<double, dim, 1>& fonc_hu) {
+    const double T = horizon_.T(t);
+    const double dt = T / N;
     assert(T >= 0);
     x_[0] = x;
     // Compute the state trajectory over the horizon  
@@ -86,7 +85,7 @@ public:
     }
   }
 
-  void retrieve_dummy(Vector<dim>& solution, Vector<dim>& fonc_hu, const Scalar min_dummy) {
+  void retrieve_dummy(Eigen::Matrix<double, dim, 1>& solution, Eigen::Matrix<double, dim, 1>& fonc_hu, const double min_dummy) {
     if constexpr (nub > 0) {
       for (size_t i=0; i<N; ++i) {
         const int inucb2 = i * (nuc + 2 * nub);
@@ -101,7 +100,7 @@ public:
     }
   }
 
-  void retrieve_mu(Vector<dim>& solution, Vector<dim>& fonc_hu) {
+  void retrieve_mu(Eigen::Matrix<double, dim, 1>& solution, Eigen::Matrix<double, dim, 1>& fonc_hu) {
     if constexpr (nub > 0) {
       for (size_t i=0; i<N; ++i) {
         const int inucb2 = i * (nuc + 2 * nub);
@@ -122,17 +121,17 @@ public:
 
   const Horizon& horizon() const { return horizon_; }
 
-  const std::array<Vector<nx>, N+1>& x() const { return x_; }
+  const std::array<Eigen::Matrix<double, nx, 1>, N+1>& x() const { return x_; }
 
-  const std::array<Vector<nx>, N+1>& lmd() const { return lmd_; }
+  const std::array<Eigen::Matrix<double, nx, 1>, N+1>& lmd() const { return lmd_; }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
   OCP ocp_;
   Horizon horizon_;
-  Vector<nx> dx_;
-  std::array<Vector<nx>, N+1> x_, lmd_;
+  Eigen::Matrix<double, nx, 1> dx_;
+  std::array<Eigen::Matrix<double, nx, 1>, N+1> x_, lmd_;
 };
 
 } // namespace detail

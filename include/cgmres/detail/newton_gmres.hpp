@@ -3,7 +3,6 @@
 
 #include <stdexcept>
 
-#include "cgmres/types.hpp"
 #include "cgmres/detail/macros.hpp"
 
 
@@ -16,12 +15,12 @@ public:
   static constexpr int nx = NLP::nx;
   static constexpr int dim = NLP::dim;
 
-  NewtonGMRES(const NLP& nlp, const Scalar finite_difference_epsilon) 
+  NewtonGMRES(const NLP& nlp, const double finite_difference_epsilon) 
     : nlp_(nlp), 
       finite_difference_epsilon_(finite_difference_epsilon),
-      updated_solution_(Vector<dim>::Zero()), 
-      fonc_(Vector<dim>::Zero()), 
-      fonc_1_(Vector<dim>::Zero()) {
+      updated_solution_(Eigen::Matrix<double, dim, 1>::Zero()), 
+      fonc_(Eigen::Matrix<double, dim, 1>::Zero()), 
+      fonc_1_(Eigen::Matrix<double, dim, 1>::Zero()) {
     if (finite_difference_epsilon <= 0.0) {
       throw std::invalid_argument("[NewtonGMRES]: 'finite_difference_epsilon' must be positive!");
     }
@@ -31,20 +30,20 @@ public:
 
   ~NewtonGMRES() = default;
 
-  Scalar optError() const {
+  double optError() const {
     return fonc_.template lpNorm<2>();
   }
 
   template <typename VectorType>
-  void eval_fonc(const Scalar t, const MatrixBase<VectorType>& x, const Vector<dim>& solution) {
+  void eval_fonc(const double t, const Eigen::MatrixBase<VectorType>& x, const Eigen::Matrix<double, dim, 1>& solution) {
     nlp_.eval_fonc_hu(t, x, solution, fonc_);
   }
 
   template <typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4>
-  void eval_b(const Scalar t, const MatrixBase<VectorType1>& x, 
-              const MatrixBase<VectorType2>& solution, 
-              const MatrixBase<VectorType3>& solution_update, 
-              const MatrixBase<VectorType4>& b_vec) {
+  void eval_b(const double t, const Eigen::MatrixBase<VectorType1>& x, 
+              const Eigen::MatrixBase<VectorType2>& solution, 
+              const Eigen::MatrixBase<VectorType3>& solution_update, 
+              const Eigen::MatrixBase<VectorType4>& b_vec) {
     assert(solution.size() == dim);
     assert(solution_update.size() == dim);
     assert(b_vec.size() == dim);
@@ -55,10 +54,10 @@ public:
   }
 
   template <typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4>
-  void eval_Ax(const Scalar t, const MatrixBase<VectorType1>& x,
-               const MatrixBase<VectorType2>& solution, 
-               const MatrixBase<VectorType3>& solution_update, 
-               const MatrixBase<VectorType4>& ax_vec) {
+  void eval_Ax(const double t, const Eigen::MatrixBase<VectorType1>& x,
+               const Eigen::MatrixBase<VectorType2>& solution, 
+               const Eigen::MatrixBase<VectorType3>& solution_update, 
+               const Eigen::MatrixBase<VectorType4>& ax_vec) {
     assert(solution.size() == dim);
     assert(solution_update.size() == dim);
     assert(ax_vec.size() == dim);
@@ -67,12 +66,12 @@ public:
     CGMRES_EIGEN_CONST_CAST(VectorType4, ax_vec) = (fonc_1_ - fonc_) / finite_difference_epsilon_;
   }
 
-  void retrieve_dummy(Vector<dim>& solution, const Scalar min_dummy) {
+  void retrieve_dummy(Eigen::Matrix<double, dim, 1>& solution, const double min_dummy) {
     fonc_1_.setZero();
     nlp_.retrieve_dummy(solution, fonc_1_, min_dummy);
   }
 
-  void retrieve_mu(Vector<dim>& solution) {
+  void retrieve_mu(Eigen::Matrix<double, dim, 1>& solution) {
     fonc_1_.setZero();
     nlp_.retrieve_mu(solution, fonc_1_);
   }
@@ -89,8 +88,8 @@ public:
 
 private:
   NLP nlp_;
-  Scalar finite_difference_epsilon_; 
-  Vector<dim> updated_solution_, fonc_, fonc_1_;
+  double finite_difference_epsilon_; 
+  Eigen::Matrix<double, dim, 1> updated_solution_, fonc_, fonc_1_;
 };
 
 } // namespace detail

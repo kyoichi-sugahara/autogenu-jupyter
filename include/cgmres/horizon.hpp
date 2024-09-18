@@ -6,7 +6,6 @@
 #include <cassert>
 #include <iostream>
 
-#include "cgmres/types.hpp"
 
 
 namespace cgmres {
@@ -24,7 +23,7 @@ public:
   /// @param[in] alpha The parameter of the time-varying horizon length. Default is 0.0 (i.e., fixed-length horizon).
   /// @param[in] t0 The parameter of the time-varying horizon length. Default is 0.0.
   ///
-  Horizon(const Scalar Tf, const Scalar alpha=0.0, const Scalar t0=0.0)
+  Horizon(const double Tf, const double alpha=0.0, const double t0=0.0)
     : Tf_(Tf), alpha_(alpha), t0_(t0) {
     if (Tf <= 0.0) {
       throw std::invalid_argument("[Horizon]: 'Tf' must be positive!");
@@ -47,7 +46,7 @@ public:
   /// @param[in] t The initial time of the horizon. If this horizon is time-varying (i.e., alpha > 0.0),
   /// then this value must not be less than t0.
   ///
-  Scalar T(const Scalar t) const {
+  double T(const double t) const {
     if (time_varying_length_) {
       if (t < t0_) {
         throw std::invalid_argument("[Horizon]: 't' must be greater than or equal to 't0' (" +  std::to_string(t0_) + ") !");
@@ -63,7 +62,7 @@ public:
   /// @brief Resets the length of the horizon (for time-varying horizon).
   /// @param[in] t0 The parameter of the time-varying horizon length. 
   ///
-  void reset(const Scalar t0) {
+  void reset(const double t0) {
     t0_ = t0;
   }
 
@@ -86,7 +85,7 @@ public:
   }
 
 private:
-  Scalar Tf_, alpha_, t0_;
+  double Tf_, alpha_, t0_;
   bool time_varying_length_;
 };
 

@@ -3,7 +3,6 @@
 
 #include <array>
 
-#include "cgmres/types.hpp"
 
 #include "cgmres/detail/macros.hpp"
 
@@ -12,10 +11,10 @@ namespace detail {
 namespace ubounds {
 
 template <typename OCP, typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4>
-void eval_hu(const OCP& ocp, const MatrixBase<VectorType1>& u, 
-             const MatrixBase<VectorType2>& dummy, 
-             const MatrixBase<VectorType3>& mu, 
-             const MatrixBase<VectorType4>& hu) {
+void eval_hu(const OCP& ocp, const Eigen::MatrixBase<VectorType1>& u, 
+             const Eigen::MatrixBase<VectorType2>& dummy, 
+             const Eigen::MatrixBase<VectorType3>& mu, 
+             const Eigen::MatrixBase<VectorType4>& hu) {
   constexpr int nub = OCP::nub;
   if constexpr (nub > 0) {
     assert(dummy.size() == nub);
@@ -29,25 +28,25 @@ void eval_hu(const OCP& ocp, const MatrixBase<VectorType1>& u,
 }
 
 template <typename OCP, typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4>
-void eval_hdummy(const OCP& ocp, const MatrixBase<VectorType1>& u, 
-                   const MatrixBase<VectorType2>& dummy, 
-                   const MatrixBase<VectorType3>& mu, 
-                   const MatrixBase<VectorType4>& hdummy) {
+void eval_hdummy(const OCP& ocp, const Eigen::MatrixBase<VectorType1>& u, 
+                   const Eigen::MatrixBase<VectorType2>& dummy, 
+                   const Eigen::MatrixBase<VectorType3>& mu, 
+                   const Eigen::MatrixBase<VectorType4>& hdummy) {
   constexpr int nub = OCP::nub;
   if constexpr (nub > 0) {
     assert(dummy.size() == nub);
     assert(mu.size() == nub);
     assert(hdummy.size() == nub);
     CGMRES_EIGEN_CONST_CAST(VectorType4, hdummy).array() 
-        = 2.0 * mu.array() * dummy.array() - Map<const Vector<nub>>(ocp.dummy_weight.data()).array();
+        = 2.0 * mu.array() * dummy.array() - Eigen::Map<const Eigen::Matrix<double, nub, 1>>(ocp.dummy_weight.data()).array();
   }
 }
 
 template <typename OCP, typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4>
-void eval_hmu(const OCP& ocp, const MatrixBase<VectorType1>& u, 
-                const MatrixBase<VectorType2>& dummy, 
-                const MatrixBase<VectorType3>& mu, 
-                const MatrixBase<VectorType4>& hmu) {
+void eval_hmu(const OCP& ocp, const Eigen::MatrixBase<VectorType1>& u, 
+                const Eigen::MatrixBase<VectorType2>& dummy, 
+                const Eigen::MatrixBase<VectorType3>& mu, 
+                const Eigen::MatrixBase<VectorType4>& hmu) {
   constexpr int nub = OCP::nub;
   if constexpr (nub > 0) {
     assert(dummy.size() == nub);
@@ -64,33 +63,33 @@ void eval_hmu(const OCP& ocp, const MatrixBase<VectorType1>& u,
 
 template <typename VectorType1, typename VectorType2, typename VectorType3, 
           typename VectorType4, typename VectorType5>
-void multiply_hdummy_inv(const MatrixBase<VectorType1>& dummy, 
-                         const MatrixBase<VectorType2>& mu, 
-                         const MatrixBase<VectorType3>& hdummy, 
-                         const MatrixBase<VectorType4>& hmu, 
-                         const MatrixBase<VectorType5>& hdummy_multiplied) {
+void multiply_hdummy_inv(const Eigen::MatrixBase<VectorType1>& dummy, 
+                         const Eigen::MatrixBase<VectorType2>& mu, 
+                         const Eigen::MatrixBase<VectorType3>& hdummy, 
+                         const Eigen::MatrixBase<VectorType4>& hmu, 
+                         const Eigen::MatrixBase<VectorType5>& hdummy_multiplied) {
   CGMRES_EIGEN_CONST_CAST(VectorType5, hdummy_multiplied).array() = hmu.array() / (2.0 * dummy.array());
 }
 
 template <typename VectorType1, typename VectorType2, typename VectorType3, 
           typename VectorType4, typename VectorType5, typename VectorType6>
-void multiply_hmu_inv(const MatrixBase<VectorType1>& dummy, 
-                      const MatrixBase<VectorType2>& mu, 
-                      const MatrixBase<VectorType3>& hdummy, 
-                      const MatrixBase<VectorType4>& hmu, 
-                      const MatrixBase<VectorType5>& hdummy_multiplied, 
-                      const MatrixBase<VectorType6>& hmu_multiplied) {
+void multiply_hmu_inv(const Eigen::MatrixBase<VectorType1>& dummy, 
+                      const Eigen::MatrixBase<VectorType2>& mu, 
+                      const Eigen::MatrixBase<VectorType3>& hdummy, 
+                      const Eigen::MatrixBase<VectorType4>& hmu, 
+                      const Eigen::MatrixBase<VectorType5>& hdummy_multiplied, 
+                      const Eigen::MatrixBase<VectorType6>& hmu_multiplied) {
   CGMRES_EIGEN_CONST_CAST(VectorType6, hmu_multiplied).array() = hdummy.array() / (2.0 * dummy.array())
                                                                   - mu.array() * hdummy_multiplied.array() / dummy.array();
 }
 
 template <typename OCP, typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4, typename VectorType5>
-void retrieve_dummy_update(const OCP& ocp, 
-                          const MatrixBase<VectorType1>& u, 
-                          const MatrixBase<VectorType2>& dummy, 
-                          const MatrixBase<VectorType3>& mu, 
-                          const MatrixBase<VectorType4>& u_update, 
-                          const MatrixBase<VectorType5>& dummy_update) {
+void retrieve_dummy_update(const OCP& ocp,
+                          const Eigen::MatrixBase<VectorType1>& u, 
+                          const Eigen::MatrixBase<VectorType2>& dummy, 
+                          const Eigen::MatrixBase<VectorType3>& mu, 
+                          const Eigen::MatrixBase<VectorType4>& u_update, 
+                          const Eigen::MatrixBase<VectorType5>& dummy_update) {
   constexpr int nub = OCP::nub;
   if constexpr (nub > 0) {
     assert(dummy.size() == nub);
@@ -104,12 +103,12 @@ void retrieve_dummy_update(const OCP& ocp,
 }
 
 template <typename OCP, typename VectorType1, typename VectorType2, typename VectorType3, typename VectorType4, typename VectorType5>
-void retrieve_mu_update(const OCP& ocp, 
-                       const MatrixBase<VectorType1>& u, 
-                       const MatrixBase<VectorType2>& dummy, 
-                       const MatrixBase<VectorType3>& mu, 
-                       const MatrixBase<VectorType4>& u_update, 
-                       const MatrixBase<VectorType5>& mu_udpate) {
+void retrieve_mu_update(const OCP& ocp,
+                       const Eigen::MatrixBase<VectorType1>& u, 
+                       const Eigen::MatrixBase<VectorType2>& dummy, 
+                       const Eigen::MatrixBase<VectorType3>& mu, 
+                       const Eigen::MatrixBase<VectorType4>& u_update, 
+                       const Eigen::MatrixBase<VectorType5>& mu_udpate) {
   constexpr int nub = OCP::nub;
   if constexpr (nub > 0) {
     assert(dummy.size() == nub);
@@ -117,14 +116,14 @@ void retrieve_mu_update(const OCP& ocp,
     for (int i=0; i<nub; ++i) {
       const auto ui = OCP::ubound_indices[i];
       CGMRES_EIGEN_CONST_CAST(VectorType5, mu_udpate).coeffRef(ui) 
-          = - mu.coeff(i) * (2.0*u.coeff(ui) - ocp.umin[i] - ocp.umax[i]) * u_update.coeff(ui) 
+          = - mu.coeff(i) * (2.0*u.coeff(ui) - ocp.umin[i] - ocp.umax[i]) * u_update.coeff(ui)
                           / (2.0 * dummy.coeff(i) * dummy.coeff(i));
     }
   }
 }
 
 template <typename VectorType>
-void clip_dummy(const MatrixBase<VectorType>& dummy, const Scalar min) {
+void clip_dummy(const Eigen::MatrixBase<VectorType>& dummy, const double min) {
   assert(min >= 0.0);
   const size_t nub = dummy.size();
   for (size_t i=0; i<nub; ++i) {
