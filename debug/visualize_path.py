@@ -41,7 +41,7 @@ def find_latest_directory(log_directory):
     return None
 
 
-def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
+def plot_trajectory(data_directory=None, creation_time=None, trajectories=None, trajectory_only=False):
     if data_directory is None:
         home_directory = os.path.expanduser("~")
         log_directory = os.path.join(home_directory, ".ros", "log")
@@ -94,15 +94,17 @@ def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
     if trajectories is None:
         trajectories = available_trajectories.keys()
 
-    fig, ax = plt.subplots(
-        2, 2, figsize=(10, 10), gridspec_kw={"height_ratios": [2, 1]}
-    )
-    plt.subplots_adjust(bottom=0.2, hspace=0.5, wspace=0.4)
-
-    ax1 = ax[0, 0]
-    ax1_span = plt.subplot2grid((2, 2), (0, 0), colspan=2)
-    ax2 = ax[1, 0]
-    ax3 = ax[1, 1]
+    if trajectory_only:
+        fig, ax1_span = plt.subplots(figsize=(10, 8))
+        plt.subplots_adjust(bottom=0.2)
+    else:
+        fig, ax = plt.subplots(
+            2, 2, figsize=(10, 10), gridspec_kw={"height_ratios": [2, 1]}
+        )
+        plt.subplots_adjust(bottom=0.2, hspace=0.5, wspace=0.4)
+        ax1_span = plt.subplot2grid((2, 2), (0, 0), colspan=2)
+        ax2 = ax[1, 0]
+        ax3 = ax[1, 1]
 
     plots = {}
     for traj in trajectories:
@@ -123,29 +125,30 @@ def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
     ax1_span.grid(True)
     ax1_span.set_aspect("equal", adjustable="box")
 
-    ax2.set_xlabel("Trajectory Index")
-    ax2.set_ylabel("Curvature")
-    ax2.set_title("Curvature over trajectory index")
-    ax2.grid(True)
+    if not trajectory_only:
+        ax2.set_xlabel("Trajectory Index")
+        ax2.set_ylabel("Curvature")
+        ax2.set_title("Curvature over trajectory index")
+        ax2.grid(True)
 
-    ax3.set_xlabel("Trajectory Index")
-    ax3.set_ylabel("Velocity")
-    ax3.set_title("Velocity over trajectory index")
-    ax3.grid(True)
+        ax3.set_xlabel("Trajectory Index")
+        ax3.set_ylabel("Velocity")
+        ax3.set_title("Velocity over trajectory index")
+        ax3.grid(True)
 
     time_data = read_csv(data_directory, "time.log")
-    curvature_data = read_csv(data_directory, "resampled_k.log")
-    velocity_data = read_csv(data_directory, "resampled_vx.log")
-
     slider_ax = plt.axes([0.2, 0.05, 0.6, 0.03])
     time_slider = Slider(
         slider_ax, "Time", 0, max(1, len(time_data) - 1), valinit=0, valstep=1
     )
 
-    (curvature_line,) = ax2.plot([], [], color="red", label="Curvature")
-    (velocity_line,) = ax3.plot([], [], color="blue", label="Velocity")
-    ax2.legend()
-    ax3.legend()
+    if not trajectory_only:
+        curvature_data = read_csv(data_directory, "resampled_k.log")
+        velocity_data = read_csv(data_directory, "resampled_vx.log")
+        (curvature_line,) = ax2.plot([], [], color="red", label="Curvature")
+        (velocity_line,) = ax3.plot([], [], color="blue", label="Velocity")
+        ax2.legend()
+        ax3.legend()
 
     def update(time_index):
         for traj in trajectories:
@@ -155,25 +158,25 @@ def plot_trajectory(data_directory=None, creation_time=None, trajectories=None):
                 y_data = read_csv(data_directory, data["y"])[time_index]
                 plots[traj].set_data(x_data, y_data)
 
-        curvature_line.set_data(
-            range(len(curvature_data[time_index])), curvature_data[time_index]
-        )
-        velocity_line.set_data(
-            range(len(velocity_data[time_index])), velocity_data[time_index]
-        )
+        if not trajectory_only:
+            curvature_line.set_data(
+                range(len(curvature_data[time_index])), curvature_data[time_index]
+            )
+            velocity_line.set_data(
+                range(len(velocity_data[time_index])), velocity_data[time_index]
+            )
+            ax2.relim()
+            ax2.autoscale_view()
+            ax3.relim()
+            ax3.autoscale_view()
 
         ax1_span.relim()
         ax1_span.autoscale_view()
-        ax2.relim()
-        ax2.autoscale_view()
-        ax3.relim()
-        ax3.autoscale_view()
         fig.canvas.draw_idle()
 
     time_slider.on_changed(update)
     update(0)
     plt.show()
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot trajectory data from CSV files.")
